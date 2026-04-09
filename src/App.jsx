@@ -765,23 +765,12 @@ function App() {
                           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }}
                         style={{ 
-                          backgroundColor: '#27272a', color: '#10b981', 
-                          border: '2px solid #10b981', 
-                          padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 900, cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: '10px', 
-                          boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)',
-                          transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.02)';
-                          e.currentTarget.style.boxShadow = '0 0 30px rgba(16, 185, 129, 0.6)';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
+                          backgroundColor: '#27272a', color: '#10b981', border: '2px solid white', 
+                          padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 800, cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 15px rgba(255,255,255,0.1)'
                         }}
                       >
-                        <Trophy size={14} color="#fbbf24" fill="#fbbf24" strokeWidth={3} /> Show My Position
+                        < Trophy size={14} color="#fbbf24" fill="#fbbf24" style={{ opacity: 0.9 }} /> Show My Position
                       </button>
                     )}
                   </div>
