@@ -50,56 +50,10 @@ Discussion is organized into specialized tactical units (Wings) to ensure expert
 
 ---
 
-## 🚀 Quick Start
-
-### 1. Prerequisites
-- Node.js (v18+)
-- npm
-
-### 2. Installation
-Clone the repository:
-```bash
-git clone https://github.com/rizzesh/WebStakes-Web-Frontiers-.git
-cd "Web Frontiers"
-```
-
-Install root dependencies (Frontend):
-```bash
-npm install
-```
-
-Install server dependencies (Backend):
-```bash
-cd server
-npm install
-```
-
-### 3. Database Initialization
-From the `server` directory, run the following:
-```bash
-npx prisma db push
-```
-This will set up the primary SQLite database and generate the client.
-
-### 4. Launch
-Launch the Backend (from `server` directory):
-```bash
-npm run dev # or npx ts-node index.ts
-```
-
-Launch the Frontend (from root directory):
-```bash
-npm run dev
-```
-
-The Sanctuary will be live at `http://localhost:5173`.
-
----
-
 ## 🛡️ Protocol Rules (Contribution)
 1. Maintain academic integrity.
 2. Respect the anonymity of the GhostNinjas.
 3. Mark doubts as satisfactory once resolved to help maintain the leaderboard.
 
 ---
-© 2024 **CIPHER SCHOLAR CORE** • IIITL Sanctuary Protocol 9.2.1
+© 2026 **IIITLDoubtMask** • IIITL Sanctuary Protocol 9.2.1
