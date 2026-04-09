@@ -1,16 +1,105 @@
-# React + Vite
+# IIITLDoubtMask
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**The Sanctuary for Anonymous Academic Excellence**
 
-Currently, two official plugins are available:
+IIITLDoubtMask is a high-performance, cinematic academic forum designed for students to collaborate, resolve doubts, and share resources under a protective veil of anonymity. Inspired by the need for a safe-haven for academic inquiry, the platform provides a "GhostNinja" protocol for masked posting combined with a robust community reputation system.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![Project Preview](public/icons.svg) 
+*(Note: Replace with a real screenshot of the landing page in production)*
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ⚡ Key Features
 
-## Expanding the ESLint configuration
+### 🛡️ Identity Masking (GhostNinja Protocol)
+- **Selective Anonymity**: Toggle anonymity for any post or comment. 
+- **Privacy First**: When "Masked," your university alias is replaced by a temporary "GhostNinja" identity, allowing for safe questions without social pressure.
+- **Persistent Metadata**: Even when masked, your academic status remains verified by the platform core.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 🦅 Categorized "Wings"
+Discussion is organized into specialized tactical units (Wings) to ensure expert oversight:
+- **General**: Main campus feed.
+- **Web/App**: Frontend, backend, and cross-platform development.
+- **ML/Web3**: Artificial intelligence, neural networks, and blockchain.
+- **FOSS/Infosec**: Open source, Linux kernel, and cybersecurity.
+- **CP/Design**: Competitive programming and UI/UX excellence.
+
+### 🏆 Academic Gamification
+- **Reputation XP**: Earn Experience Points (XP) for providing satisfactory solutions.
+- **Global Leaderboard**: Track your standing among all IIITL scholars in real-time.
+- **Satisfactory Resolution**: Doubt creators can mark answers as "Satisfactory," awarding XP and archiving the post into the global Solved Knowledge Base.
+
+### 🎓 Resource Sanctuary
+- **Multimodal Sharing**: Instantly share study materials including links, text snippets, and images.
+- **Discussion Threads**: Every resource acts as a focal point for deeper collaborative study.
+
+---
+
+## 🛠️ Technical Stack
+
+### Frontend
+- **React 18** + **Vite**: Ultra-fast development and optimized build times.
+- **Lucide React**: Crisp, professional iconography.
+- **Vanilla CSS**: Custom, high-fidelity dark-mode aesthetic with custom animations.
+
+### Backend & Database
+- **Express.js**: Lightweight and scalable API foundation.
+- **Prisma ORM**: Type-safe database interactions.
+- **SQLite**: Local, disk-based persistence for performance and portability.
+- **Bcryptjs**: End-to-end security for university credentials.
+
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+- Node.js (v18+)
+- npm
+
+### 2. Installation
+Clone the repository:
+```bash
+git clone https://github.com/rizzesh/WebStakes-Web-Frontiers-.git
+cd "Web Frontiers"
+```
+
+Install root dependencies (Frontend):
+```bash
+npm install
+```
+
+Install server dependencies (Backend):
+```bash
+cd server
+npm install
+```
+
+### 3. Database Initialization
+From the `server` directory, run the following:
+```bash
+npx prisma db push
+```
+This will set up the primary SQLite database and generate the client.
+
+### 4. Launch
+Launch the Backend (from `server` directory):
+```bash
+npm run dev # or npx ts-node index.ts
+```
+
+Launch the Frontend (from root directory):
+```bash
+npm run dev
+```
+
+The Sanctuary will be live at `http://localhost:5173`.
+
+---
+
+## 🛡️ Protocol Rules (Contribution)
+1. Maintain academic integrity.
+2. Respect the anonymity of the GhostNinjas.
+3. Mark doubts as satisfactory once resolved to help maintain the leaderboard.
+
+---
+© 2024 **CIPHER SCHOLAR CORE** • IIITL Sanctuary Protocol 9.2.1
