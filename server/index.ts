@@ -17,6 +17,18 @@ const sanitizeUser = (user: any) => {
   return safe;
 };
 
+// Standard select for user data
+const userSelect = { 
+  id: true, 
+  alias: true, 
+  name: true, 
+  rollNumber: true, 
+  avatar: true, 
+  xp: true, 
+  solved: true,
+  description: true 
+};
+
 // Auto-seed if empty
 async function seed() {
   try {
@@ -103,7 +115,7 @@ app.get('/api/posts', async (req, res) => {
   try {
     const posts = await prisma.post.findMany({
       include: { 
-        author: { select: { id: true, alias: true, name: true, rollNumber: true, avatar: true, xp: true, description: true } },
+        author: { select: userSelect },
         _count: { select: { comments: true } } 
       },
       orderBy: { created_at: 'desc' }
@@ -121,9 +133,9 @@ app.get('/api/posts/:id', async (req, res) => {
     const post = await prisma.post.findUnique({
       where: { id: parseInt(req.params.id) },
       include: { 
-         author: { select: { id: true, alias: true, name: true, rollNumber: true, avatar: true, xp: true, description: true } },
+         author: { select: userSelect },
          comments: {
-           include: { author: { select: { id: true, alias: true, name: true, rollNumber: true, avatar: true, xp: true, description: true } } }
+           include: { author: { select: userSelect } }
          } 
       }
     });
@@ -150,7 +162,7 @@ app.post('/api/posts', async (req, res) => {
         is_anonymous: !!is_anonymous, 
         author_id: user.id,
       },
-      include: { author: { select: { id: true, alias: true, name: true, rollNumber: true, avatar: true, xp: true, description: true } } }
+      include: { author: { select: userSelect } }
     });
     res.status(201).json(post);
   } catch (error) {
@@ -220,7 +232,7 @@ app.post('/api/comments', async (req, res) => {
         text_content,
         parent_comment_id: parent_comment_id ? parseInt(parent_comment_id) : null
       },
-      include: { author: { select: { id: true, alias: true, name: true, rollNumber: true, avatar: true, xp: true, description: true } } }
+      include: { author: { select: userSelect } }
     });
     res.status(201).json(comment);
   } catch (err) {
@@ -276,6 +288,40 @@ app.patch('/api/users/profile', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Get User Profile
+app.get('/api/users/:alias', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { alias: req.params.alias },
+      select: userSelect
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// Increment Solved Count & XP
+app.patch('/api/users/:alias/increment-solved', async (req, res) => {
+  try {
+    const { alias } = req.params;
+    const { xpAmount = 10, incrementSolved = true } = req.body;
+    
+    const user = await prisma.user.update({
+      where: { alias },
+      data: {
+        xp: { increment: xpAmount },
+        solved: incrementSolved ? { increment: 1 } : undefined
+      }
+    });
+    res.json(sanitizeUser(user));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to increment metrics' });
   }
 });
 

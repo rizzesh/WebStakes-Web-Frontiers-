@@ -16,6 +16,7 @@ model User {
   password    String
   avatar      String?
   xp          Int       @default(0)
+  solved      Int       @default(0)
   posts       Post[]
   comments    Comment[]
 }
