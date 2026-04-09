@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, ChevronRight, CheckCircle, Clock, X } from 'lucide-react';
+import { Bell, ChevronRight, CheckCircle, Clock, X, ArrowLeft } from 'lucide-react';
 
 export default function DashboardPage({ currentUser, viewedUser, doubts, contributors, sortedContributors, WINGS, onNavigate, onUpdateUser, onViewThread }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -10,9 +10,32 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
   const displayUser = viewedUser || currentUser;
   const isOwnProfile = (!viewedUser || (currentUser && viewedUser.alias === currentUser.alias));
 
+  // Dynamic Theme Mapping
+  const GET_PROFILE_THEME = (avatarUrl) => {
+    if (!avatarUrl) return { primary: '#a855f7', bg: 'linear-gradient(180deg, #0d0814 0%, #05020a 100%)' };
+    const seed = avatarUrl.split('seed=')[1]?.split('&')[0] || '';
+    
+    const themes = {
+      'Alpha': { primary: '#6366f1', bg: 'linear-gradient(180deg, #1e1b4b 0%, #05020a 100%)' },
+      'Beta': { primary: '#10b981', bg: 'linear-gradient(180deg, #064e3b 0%, #05020a 100%)' },
+      'Gamma': { primary: '#f43f5e', bg: 'linear-gradient(180deg, #4c0519 0%, #05020a 100%)' },
+      'Delta': { primary: '#fbbf24', bg: 'linear-gradient(180deg, #451a03 0%, #05020a 100%)' },
+      'Omega': { primary: '#94a3b8', bg: 'linear-gradient(180deg, #0f172a 0%, #05020a 100%)' },
+      'Zeta': { primary: '#d946ef', bg: 'linear-gradient(180deg, #4a044e 0%, #05020a 100%)' },
+      'Sigma': { primary: '#0ea5e9', bg: 'linear-gradient(180deg, #082f49 0%, #05020a 100%)' },
+      'Kappa': { primary: '#818cf8', bg: 'linear-gradient(180deg, #312e81 0%, #05020a 100%)' },
+      'Epsilon': { primary: '#84cc16', bg: 'linear-gradient(180deg, #1a2e05 0%, #05020a 100%)' },
+      'Theta': { primary: '#f97316', bg: 'linear-gradient(180deg, #431407 0%, #05020a 100%)' },
+    };
+
+    return themes[seed] || { primary: '#a855f7', bg: 'linear-gradient(180deg, #0d0814 0%, #05020a 100%)' };
+  };
+
+  const theme = GET_PROFILE_THEME(displayUser?.avatar);
+
   // Extrapolate mock data
   const userStats = contributors.find(c => c.name === displayUser?.alias);
-  const totalSolved = userStats?.solved || 0;
+  const totalSolved = displayUser?.solved || 0;
   const userRank = sortedContributors.findIndex(c => c.name === displayUser?.alias) + 1 || '?';
   const userDoubts = doubts.filter(d => (isOwnProfile && d.creatorAlias === displayUser?.alias) || (!isOwnProfile && d.author === displayUser?.alias));
 
@@ -34,21 +57,23 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
   };
 
   return (
-    <div style={{ background: 'linear-gradient(180deg, #0d0814 0%, #05020a 100%)', minHeight: '100vh', width: '100vw', fontFamily: 'Inter, sans-serif', color: '#fff', overflowY: 'auto' }}>
+    <div style={{ background: theme.bg, minHeight: '100vh', width: '100vw', fontFamily: 'Inter, sans-serif', color: '#fff', overflowY: 'auto' }}>
       
-      {/* MOCK TOP NAV */}
-      <header style={{ height: '72px', borderBottom: '1px solid rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 48px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
-          <div style={{ fontSize: '20px', fontWeight: 800, cursor: 'pointer' }} onClick={() => onNavigate('app')}>
-            <span style={{ color: 'white' }}>IIITL</span><span style={{color: '#d4d4d8'}}>DoubtMask</span>
+      {/* BRAND HEADER */}
+      <header style={{ height: '100px', borderBottom: '1px solid rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 48px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ fontSize: '24px', fontWeight: 800, cursor: 'pointer', letterSpacing: '-0.5px' }} onClick={() => onNavigate('app')}>
+            <span style={{ color: 'white' }}>IIITL</span><span style={{color: '#a1a1aa'}}>DoubtMask</span>
           </div>
-          <nav style={{ display: 'flex', gap: '32px', fontSize: '14px', color: '#a1a1aa' }}>
-            <span style={{ cursor: 'pointer' }} onClick={() => onNavigate('app', 'doubts')}>Doubts</span>
-            <span style={{ cursor: 'pointer' }} onClick={() => onNavigate('app', 'resources')}>Resources</span>
-            <span style={{ cursor: 'pointer' }} onClick={() => onNavigate('app', 'leaderboard')}>Leaderboard</span>
-          </nav>
+          <div 
+             onClick={() => onNavigate('app')}
+             style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: theme.primary, fontWeight: 600, cursor: 'pointer', opacity: 0.8 }}
+          >
+             <ArrowLeft size={14} /> Go Back to Feed
+          </div>
         </div>
 
+        {/* Removed Nav Bar as requested */}
       </header>
 
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '64px 48px' }}>
@@ -57,9 +82,9 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
         <section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '64px' }}>
           <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
             {/* Avatar block with gradient background */}
-            <div style={{ position: 'relative', width: '100px', height: '100px', borderRadius: '16px', background: 'linear-gradient(135deg, #a855f7, #6366f1)', padding: '2px', boxShadow: '0 0 20px rgba(168,85,247,0.4)' }}>
+            <div style={{ position: 'relative', width: '100px', height: '100px', borderRadius: '16px', background: `linear-gradient(135deg, ${theme.primary}, #6366f1)`, padding: '2px', boxShadow: `0 0 20px ${theme.primary}66` }}>
                <img src={getSafeAvatar(displayUser)} style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover', backgroundColor: '#120b1c' }} alt="Avatar" />
-               <div style={{ position: 'absolute', bottom: '-6px', right: '-6px', backgroundColor: '#a855f7', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #0d0814' }}>
+               <div style={{ position: 'absolute', bottom: '-6px', right: '-6px', backgroundColor: theme.primary, borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #0d0814' }}>
                  <CheckCircle size={12} color="#0d0814" fill="white" />
                </div>
             </div>
@@ -67,7 +92,7 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
             <div style={{ marginTop: '8px' }}>
               <h1 style={{ fontSize: '36px', fontWeight: 'bold', margin: '0 0 4px 0', color: 'white', letterSpacing: '-0.5px' }}>{displayUser?.alias || 'CipherScholar_01'}</h1>
               {displayUser?.name && (
-                <div style={{ fontSize: '18px', color: '#a855f7', fontWeight: 600, marginBottom: '12px' }}>{displayUser.name}</div>
+                <div style={{ fontSize: '18px', color: theme.primary, fontWeight: 600, marginBottom: '12px' }}>{displayUser.name}</div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', marginBottom: displayUser?.description ? '16px' : '0' }}>
                 <span style={{ backgroundColor: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '4px', color: '#a1a1aa', fontWeight: 600, letterSpacing: '0.5px', fontSize: '11px', textTransform: 'uppercase' }}>{displayUser?.rollNumber || 'LCI2024001'}</span>
@@ -201,35 +226,35 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
         <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px', marginBottom: '64px' }}>
           
           {/* Card 1 */}
-          <div style={{ background: 'linear-gradient(145deg, rgba(30,20,40,0.6) 0%, rgba(15,8,25,0.8) 100%)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '16px', padding: '32px', position: 'relative', boxShadow: '0 8px 32px rgba(168,85,247,0.05)' }}>
-            <div style={{ color: '#a855f7', fontSize: '11px', fontWeight: 700, letterSpacing: '1px', marginBottom: '32px', textTransform: 'uppercase' }}>Doubts Asked</div>
+          <div style={{ background: 'linear-gradient(145deg, rgba(30,20,40,0.6) 0%, rgba(15,8,25,0.8) 100%)', border: `1px solid ${theme.primary}33`, borderRadius: '16px', padding: '32px', position: 'relative', boxShadow: `0 8px 32px ${theme.primary}11` }}>
+            <div style={{ color: theme.primary, fontSize: '11px', fontWeight: 700, letterSpacing: '1px', marginBottom: '32px', textTransform: 'uppercase' }}>Doubts Asked</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-              <div style={{ fontSize: '56px', fontWeight: 'bold', lineHeight: 1, color: 'white', textShadow: '0 2px 10px rgba(168,85,247,0.3)' }}>{userDoubts.length}</div>
+              <div style={{ fontSize: '56px', fontWeight: 'bold', lineHeight: 1, color: 'white', textShadow: `0 2px 10px ${theme.primary}44` }}>{userDoubts.length}</div>
             </div>
-            <div style={{ color: '#c084fc', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
+            <div style={{ color: theme.primary, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500, opacity: 0.8 }}>
               Active
             </div>
           </div>
 
           {/* Card 2 */}
-          <div style={{ background: 'linear-gradient(145deg, rgba(30,20,40,0.6) 0%, rgba(15,8,25,0.8) 100%)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '16px', padding: '32px', position: 'relative', boxShadow: '0 8px 32px rgba(168,85,247,0.05)' }}>
-            <div style={{ color: '#a855f7', fontSize: '11px', fontWeight: 700, letterSpacing: '1px', marginBottom: '32px', textTransform: 'uppercase' }}>Academic XP</div>
+          <div style={{ background: 'linear-gradient(145deg, rgba(30,20,40,0.6) 0%, rgba(15,8,25,0.8) 100%)', border: `1px solid ${theme.primary}33`, borderRadius: '16px', padding: '32px', position: 'relative', boxShadow: `0 8px 32px ${theme.primary}11` }}>
+            <div style={{ color: theme.primary, fontSize: '11px', fontWeight: 700, letterSpacing: '1px', marginBottom: '32px', textTransform: 'uppercase' }}>Doubts Solved</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-              <div style={{ fontSize: '56px', fontWeight: 'bold', lineHeight: 1, color: 'white', textShadow: '0 2px 10px rgba(168,85,247,0.3)' }}>{displayUser?.xp || 0}</div>
+              <div style={{ fontSize: '56px', fontWeight: 'bold', lineHeight: 1, color: 'white', textShadow: `0 2px 10px ${theme.primary}44` }}>{totalSolved}</div>
             </div>
-            <div style={{ color: '#c084fc', fontSize: '12px', fontWeight: 500 }}>
-              Points Earned
+            <div style={{ color: theme.primary, fontSize: '12px', fontWeight: 500, opacity: 0.8 }}>
+              Points of Honor
             </div>
           </div>
 
-          {/* Card 3 */}
-          <div style={{ background: 'linear-gradient(145deg, rgba(30,20,40,0.6) 0%, rgba(15,8,25,0.8) 100%)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '16px', padding: '32px', position: 'relative', boxShadow: '0 8px 32px rgba(168,85,247,0.05)' }}>
-            <div style={{ color: '#a855f7', fontSize: '11px', fontWeight: 700, letterSpacing: '1px', marginBottom: '32px', textTransform: 'uppercase' }}>IIITL Ranking</div>
+          {/* Card 2.5 (XP) */}
+          <div style={{ background: 'linear-gradient(145deg, rgba(30,20,40,0.6) 0%, rgba(15,8,25,0.8) 100%)', border: `1px solid ${theme.primary}33`, borderRadius: '16px', padding: '32px', position: 'relative', boxShadow: `0 8px 32px ${theme.primary}11` }}>
+            <div style={{ color: theme.primary, fontSize: '11px', fontWeight: 700, letterSpacing: '1px', marginBottom: '32px', textTransform: 'uppercase' }}>Academic XP</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
-              <div style={{ fontSize: '56px', fontWeight: 'bold', lineHeight: 1, color: 'white', textShadow: '0 2px 10px rgba(168,85,247,0.3)' }}>#{userRank}</div>
+              <div style={{ fontSize: '56px', fontWeight: 'bold', lineHeight: 1, color: 'white', textShadow: `0 2px 10px ${theme.primary}44` }}>{displayUser?.xp || 0}</div>
             </div>
-            <div style={{ color: '#c084fc', fontSize: '12px', fontWeight: 500 }}>
-              Top Contributor
+            <div style={{ color: theme.primary, fontSize: '12px', fontWeight: 500, opacity: 0.8 }}>
+               Global Standing: #{userRank}
             </div>
           </div>
 

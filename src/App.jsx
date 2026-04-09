@@ -307,8 +307,29 @@ function App() {
     }
   };
 
-  const handleUserUpvote = (username, wingId, upvoterIsCreator = false) => {
+  const handleUserUpvote = async (username, wingId, upvoterIsCreator = false) => {
     if (!username || username.includes('Anonymous') || username === 'Unknown' || !wingId) return;
+    
+    // Sync to backend first
+    try {
+      const res = await fetch(`http://localhost:3001/api/users/${username}/increment-solved`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ incrementSolved: upvoterIsCreator })
+      });
+      if (res.ok) {
+        const updatedUser = await res.json();
+        // Update local currentUser if it matches
+        if (currentUser && currentUser.alias === username) {
+           setCurrentUser(updatedUser);
+        }
+        // Update viewedUser if it matches
+        if (viewedUser && viewedUser.alias === username) {
+           setViewedUser(updatedUser);
+        }
+      }
+    } catch (e) { console.error("Failed to sync upvote to backend", e); }
+
     setContributors(prev => {
       const existing = prev.find(p => p.name === username);
       if (existing) {
@@ -316,7 +337,6 @@ function App() {
           if (p.name === username) {
             let newlySolved = typeof p.solved === 'string' ? parseInt(p.solved) : (p.solved || 0);
             if (upvoterIsCreator) { newlySolved += 1; }
-            else if (typeof p.solved === 'string') { newlySolved = p.solved; }
             return { ...p, wingXp: { ...p.wingXp, [wingId]: (p.wingXp?.[wingId] || 0) + 10 }, solved: newlySolved };
           }
           return p;
@@ -375,20 +395,20 @@ function App() {
     }
   };
 
-  const handleProfileClick = (authorName) => {
+  const handleProfileClick = async (authorName) => {
     if (!authorName || authorName.includes('Anonymous')) return;
-    
-    const targetContributor = contributors.find(c => c.name === authorName);
-    
-    if (currentUser && authorName === currentUser.alias) {
-      setViewedUser(null);
-      setCurrentView('dashboard');
-    } else {
-      setViewedUser({ 
-         rollNumber: 'Secret',
-         alias: authorName, 
-         avatar: targetContributor ? targetContributor.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${authorName}` 
-      });
+    try {
+      const profileRes = await fetch(`http://localhost:3001/api/users/${authorName}`);
+      if (profileRes.ok) {
+        const user = await profileRes.json();
+        setViewedUser(user);
+        setCurrentView('dashboard');
+      } else {
+        throw new Error("User not found");
+      }
+    } catch(e) { 
+      const mock = contributors.find(c => c.name === authorName);
+      setViewedUser(mock ? { alias: mock.name, avatar: mock.avatar, solved: mock.solved, name: mock.fullName } : { alias: authorName, avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${authorName}`, solved: 0 });
       setCurrentView('dashboard');
     }
   };
