@@ -36,7 +36,16 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
       'Theta': { primary: '#f97316', bg: 'linear-gradient(180deg, #431407 0%, #05020a 100%)' },
     };
 
-    return themes[seed] || defaultTheme;
+    // If it's a core protocol, return it. 
+    if (themes[seed]) return themes[seed];
+
+    // Otherwise, deterministically hash the seed to one of the 10 themes
+    const seedArray = seed.split('').map(char => char.charCodeAt(0));
+    const hash = seedArray.reduce((acc, val) => acc + val, 0);
+    const keys = Object.keys(themes);
+    const pickedKey = keys[hash % keys.length];
+    
+    return themes[pickedKey];
   };
 
   // React to tempAvatar during editing for live preview

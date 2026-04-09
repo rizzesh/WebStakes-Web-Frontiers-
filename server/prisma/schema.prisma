@@ -1,10 +1,10 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model User {
@@ -17,21 +17,20 @@ model User {
   avatar      String?
   xp          Int       @default(0)
   solved      Int       @default(0)
-  posts       Post[]
   comments    Comment[]
+  posts       Post[]
 }
 
 model Wing {
-  id      String  @id
-  name    String
-  color   String
-  iconId  String?
+  id     String  @id
+  name   String
+  color  String
+  iconId String?
 }
 
 model Post {
   id           Int       @id @default(autoincrement())
   author_id    Int
-  author       User      @relation(fields: [author_id], references: [id])
   is_anonymous Boolean   @default(false)
   title        String
   text_content String
@@ -42,18 +41,19 @@ model Post {
   upvotedBy    String    @default("[]")
   created_at   DateTime  @default(now())
   comments     Comment[]
+  author       User      @relation(fields: [author_id], references: [id])
 }
 
 model Comment {
   id                Int       @id @default(autoincrement())
   post_id           Int
-  post              Post      @relation(fields: [post_id], references: [id], onDelete: Cascade)
   author_id         Int
-  author            User      @relation(fields: [author_id], references: [id])
   is_anonymous      Boolean   @default(false)
   text_content      String
   parent_comment_id Int?
+  created_at        DateTime  @default(now())
   parent_comment    Comment?  @relation("Thread", fields: [parent_comment_id], references: [id], onDelete: Cascade)
   child_comments    Comment[] @relation("Thread")
-  created_at        DateTime  @default(now())
+  author            User      @relation(fields: [author_id], references: [id])
+  post              Post      @relation(fields: [post_id], references: [id], onDelete: Cascade)
 }
