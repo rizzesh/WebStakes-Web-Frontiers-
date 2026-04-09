@@ -765,12 +765,12 @@ function App() {
                           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }}
                         style={{ 
-                          backgroundColor: 'var(--active-color)', color: 'white', border: 'none', 
-                          padding: '8px 16px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: '8px'
+                          backgroundColor: 'white', color: 'var(--active-color)', border: 'none', 
+                          padding: '10px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: 800, cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 15px rgba(255,255,255,0.1)'
                         }}
                       >
-                        <Trophy size={14} /> Show My Position
+                        <Trophy size={14} color="var(--active-color)" /> Show My Position
                       </button>
                     )}
                   </div>
