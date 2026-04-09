@@ -749,17 +749,39 @@ function App() {
                   {resources.filter(r => activeWing.id === 'general' || r.wingId === activeWing.id).length === 0 && (
                     <div style={{ textAlign: 'center', margin: '40px 0', color: 'var(--text-secondary)' }}>
                       No study materials found for this wing. Share something useful!
-                    </div>
-                  )}
-                </div>
-              )}
-
               {activeTab === 'leaderboard' && (
                 <div className="leaderboard-view" style={{ padding: '24px' }}>
-                  <h2 style={{color: 'white', marginBottom: '24px'}}>{activeWing.id === 'general' ? 'Combined Leaderboard' : `${activeWing.name} Leaderboard`}</h2>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                    <h2 style={{color: 'white', margin: 0}}>{activeWing.id === 'general' ? 'Combined Leaderboard' : `${activeWing.name} Leaderboard`}</h2>
+                    {currentUser && sortedContributors.some(c => c.name === currentUser.alias) && (
+                      <button 
+                        onClick={() => {
+                          const el = document.getElementById(`rank-${currentUser.alias}`);
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }}
+                        style={{ 
+                          backgroundColor: 'var(--active-color)', color: 'white', border: 'none', 
+                          padding: '8px 16px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: '8px'
+                        }}
+                      >
+                        <Trophy size={14} /> Show My Position
+                      </button>
+                    )}
+                  </div>
                   <div className="leaderboard-list">
-                    {sortedContributors.map((user, index) => (
-                       <div key={user.id} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '12px'}}>
+                     {sortedContributors.map((user, index) => (
+                        <div 
+                          key={user.id} 
+                          id={`rank-${user.name}`}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', 
+                            backgroundColor: (currentUser && user.name === currentUser.alias) ? 'rgba(var(--active-color-rgb, 168, 85, 247), 0.15)' : 'rgba(255,255,255,0.05)', 
+                            borderRadius: '12px', marginBottom: '12px',
+                            border: (currentUser && user.name === currentUser.alias) ? '1px solid var(--active-color)' : '1px solid transparent',
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
                          <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
                            <div style={{color: 'var(--text-secondary)', fontSize: '18px', fontWeight: 'bold', width: '24px'}}>#{index + 1}</div>
                            <img src={(currentUser && user.name === currentUser.alias) ? currentUser.avatar : user.avatar} style={{width: '40px', height: '40px', borderRadius: '50%'}} alt={user.name} />
