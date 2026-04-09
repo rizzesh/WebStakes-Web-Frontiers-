@@ -12,8 +12,16 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
 
   // Dynamic Theme Mapping
   const GET_PROFILE_THEME = (avatarUrl) => {
-    if (!avatarUrl) return { primary: '#a855f7', bg: 'linear-gradient(180deg, #0d0814 0%, #05020a 100%)' };
-    const seed = avatarUrl.split('seed=')[1]?.split('&')[0] || '';
+    const defaultTheme = { primary: '#a855f7', bg: 'linear-gradient(180deg, #0d0814 0%, #05020a 100%)' };
+    if (!avatarUrl) return defaultTheme;
+    
+    // Support both full URL and just the seed (for temp selection)
+    let seed = "";
+    if (avatarUrl.includes('seed=')) {
+      seed = avatarUrl.split('seed=')[1]?.split('&')[0] || '';
+    } else {
+      seed = avatarUrl;
+    }
     
     const themes = {
       'Alpha': { primary: '#6366f1', bg: 'linear-gradient(180deg, #1e1b4b 0%, #05020a 100%)' },
@@ -28,10 +36,11 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
       'Theta': { primary: '#f97316', bg: 'linear-gradient(180deg, #431407 0%, #05020a 100%)' },
     };
 
-    return themes[seed] || { primary: '#a855f7', bg: 'linear-gradient(180deg, #0d0814 0%, #05020a 100%)' };
+    return themes[seed] || defaultTheme;
   };
 
-  const theme = GET_PROFILE_THEME(displayUser?.avatar);
+  // React to tempAvatar during editing for live preview
+  const theme = GET_PROFILE_THEME(isEditing ? (tempAvatar || displayUser?.avatar) : displayUser?.avatar);
 
   // Extrapolate mock data
   const userStats = contributors.find(c => c.name === displayUser?.alias);
