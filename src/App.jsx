@@ -749,6 +749,11 @@ function App() {
                   {resources.filter(r => activeWing.id === 'general' || r.wingId === activeWing.id).length === 0 && (
                     <div style={{ textAlign: 'center', margin: '40px 0', color: 'var(--text-secondary)' }}>
                       No study materials found for this wing. Share something useful!
+                    </div>
+                  )}
+                </div>
+              )}
+
               {activeTab === 'leaderboard' && (
                 <div className="leaderboard-view" style={{ padding: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
