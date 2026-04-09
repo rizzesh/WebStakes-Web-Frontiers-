@@ -5,7 +5,7 @@
 IIITLDoubtMask is a high-performance, cinematic academic forum designed for students to collaborate, resolve doubts, and share resources under a protective veil of anonymity. Inspired by the need for a safe-haven for academic inquiry, the platform provides a "GhostNinja" protocol for masked posting combined with a robust community reputation system.
 
 ![Project Preview](public/icons.svg) 
-*(Note: Replace with a real screenshot of the landing page in production)*
+<img width="1919" height="880" alt="image" src="https://github.com/user-attachments/assets/5ef715d6-a3d7-4a90-85fa-c9888c4f2919" />
 
 ---
 
