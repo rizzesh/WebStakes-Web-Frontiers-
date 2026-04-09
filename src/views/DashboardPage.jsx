@@ -197,22 +197,24 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
                  <button onClick={() => setIsEditing(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(168,85,247,0.3)', background: 'transparent', color: '#e9d5ff', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>Cancel</button>
                   <button onClick={async () => {
                       if (currentUser?.alias) {
-                         try {
-                            const res = await fetch('http://localhost:3001/api/users/profile', {
-                               method: 'PATCH',
-                               headers: { 'Content-Type': 'application/json' },
-                               body: JSON.stringify({ 
-                                  alias: currentUser.alias, 
-                                  avatar: tempAvatar || currentUser?.avatar, 
-                                  description: tempDesc,
-                                  name: tempName
-                               })
-                            });
-                            if (!res.ok) throw new Error('Update failed');
-                            const updatedUser = await res.json();
-                            if (onUpdateUser) onUpdateUser(updatedUser);
+                         const { supabase } = await import('../lib/supabaseClient');
+                         const { data: updated, error } = await supabase
+                            .from('profiles')
+                            .update({ 
+                               name: tempName,
+                               avatar: tempAvatar || currentUser.avatar,
+                               description: tempDesc
+                            })
+                            .eq('id', currentUser.id)
+                            .select()
+                            .single();
+
+                         if (updated) {
+                            if (onUpdateUser) onUpdateUser(updated);
                             setIsEditing(false);
-                         } catch(e) { console.error(e); }
+                         } else if (error) {
+                            console.error(error);
+                         }
                       }
                   }} style={{ padding: '8px 16px', borderRadius: '8px', background: '#a855f7', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>Save Profile</button>
               </div>

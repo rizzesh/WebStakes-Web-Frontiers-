@@ -138,11 +138,38 @@ function App() {
     }
   });
   
-  const [resources, setResources] = useState(() => {
-    const saved = localStorage.getItem('iiitldoubtmask_resources');
-    try { return saved && saved !== 'undefined' ? JSON.parse(saved) : INITIAL_RESOURCES; } catch { return INITIAL_RESOURCES; }
-  });
+  const [resources, setResources] = useState([]);
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      const { supabase } = await import('./lib/supabaseClient');
+      
+      // 1. Fetch Posts & Contributors
+      const { data: posts } = await supabase.from('posts').select('*, profiles(*), comments(count)').order('created_at', { ascending: false });
+      if (posts) {
+        setDoubts(posts.map(p => ({
+          id: p.id,
+          wingId: p.wing_id,
+          creatorAlias: p.profiles?.alias,
+          author: p.is_anonymous ? 'Anonymous (Masked)' : p.profiles?.alias || 'Unknown',
+          avatar: p.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : p.profiles?.avatar,
+          time: formatDateTime(p.created_at),
+          title: p.title,
+          snippet: p.text_content,
+          solutions: p.comments?.[0]?.count || 0,
+          upvotes: p.upvotes,
+          image_url: p.image_url,
+          is_solved: p.is_solved,
+          upvotedBy: p.upvoted_by || []
+        })));
+      }
+
+      const { data: profs } = await supabase.from('profiles').select('*');
+      if (profs) setContributors(profs.map(p => ({ ...p, name: p.alias, wingXp: { general: p.xp } })));
+    };
+    init();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('iiitldoubtmask_view', currentView);
@@ -152,7 +179,6 @@ function App() {
       localStorage.removeItem('iiitldoubtmask_user');
     }
     
-    // Persist session navigation
     localStorage.setItem('iiitldoubtmask_wingId', activeWing.id);
     localStorage.setItem('iiitldoubtmask_tab', activeTab);
     localStorage.setItem('iiitldoubtmask_doubtsType', doubtsType);
@@ -166,10 +192,7 @@ function App() {
     } else {
       localStorage.removeItem('iiitldoubtmask_viewedUser');
     }
-    localStorage.setItem('iiitldoubtmask_doubts', JSON.stringify(doubts));
-    localStorage.setItem('iiitldoubtmask_contributors', JSON.stringify(contributors));
-    localStorage.setItem('iiitldoubtmask_resources', JSON.stringify(resources));
-  }, [currentView, currentUser, activeWing, activeTab, doubtsType, activePost, viewedUser, doubts, contributors, resources]);
+  }, [currentView, currentUser, activeWing, activeTab, doubtsType, activePost, viewedUser]);
 
   const sortedContributors = [...contributors].map(user => ({
     ...user,
@@ -221,194 +244,117 @@ function App() {
   });
 
   const handlePostSubmit = async (data) => {
-    try {
-      const res = await fetch('http://localhost:3001/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, alias: currentUser?.alias })
-      });
-      if (res.ok) {
-        const newDbPost = await res.json();
-        const mappedPost = {
-          id: newDbPost.id,
-          wingId: newDbPost.wing_id,
-          author: newDbPost.is_anonymous ? 'Anonymous (Masked)' : (newDbPost.author?.alias || currentUser?.alias || 'Unknown'),
-          avatar: newDbPost.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : (newDbPost.author?.avatar || currentUser?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default'),
-          time: formatDateTime(new Date()),
-          title: newDbPost.title,
-          snippet: newDbPost.text_content,
-          solutions: 0,
-          upvotes: 0,
-          image_url: newDbPost.image_url,
-          creatorAlias: currentUser?.alias
-        };
-        setDoubts([mappedPost, ...doubts]); // Prepend new post
-      } else {
-        throw new Error('Backend failed');
-      }
-    } catch {
-      // Offline Mock Fallback Create
-      const mockPost = {
-        id: Date.now(),
-        wingId: data.wing_id,
-        author: data.is_anonymous ? 'Anonymous (Masked)' : (currentUser?.alias || 'CipherScholar_01'),
-        creatorAlias: currentUser?.alias,
-        avatar: data.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : (currentUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser?.rollNumber || Date.now()}`),
-        time: 'just now',
+    const { supabase } = await import('./lib/supabaseClient');
+    const { data: newPost, error } = await supabase
+      .from('posts')
+      .insert([{
+        author_id: currentUser.id,
+        wing_id: data.wing_id,
         title: data.title,
-        snippet: data.text_content,
+        text_content: data.text_content,
+        is_anonymous: !!data.is_anonymous,
+        image_url: data.image_url
+      }])
+      .select('*, profiles(*), comments(count)')
+      .single();
+
+    if (newPost) {
+      const mapped = {
+        id: newPost.id,
+        wingId: newPost.wing_id,
+        author: newPost.is_anonymous ? 'Anonymous (Masked)' : newPost.profiles.alias,
+        avatar: newPost.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : newPost.profiles.avatar,
+        time: 'just now',
+        title: newPost.title,
+        snippet: newPost.text_content,
         solutions: 0,
         upvotes: 0,
-        image_url: data.image_url,
-        is_solved: false
+        is_solved: false,
+        creatorAlias: newPost.profiles.alias
       };
-      setDoubts([mockPost, ...doubts]);
+      setDoubts([mapped, ...doubts]);
     }
-    
     setIsAskModalOpen(false);
   };
 
   const handleMarkSolved = async (postId) => {
-    try {
-      const res = await fetch(`http://localhost:3001/api/posts/${postId}/solve`, {
-        method: 'PATCH'
-      });
-      if (!res.ok) throw new Error('Backend failed');
-      
-      const updatedDoubts = doubts.map(d => 
-        d.id === postId ? { ...d, is_solved: true } : d
-      );
-      setDoubts(updatedDoubts);
-      setActivePost(null); 
-      setDoubtsType('solved');
-    } catch(e) {
-      console.error("Failed to solve doubt", e);
-      // Fallback local update
-      const updatedDoubts = doubts.map(d => 
-        d.id === postId ? { ...d, is_solved: true } : d
-      );
-      setDoubts(updatedDoubts);
-      setActivePost(null); 
-      setDoubtsType('solved');
-    }
+    const { supabase } = await import('./lib/supabaseClient');
+    await supabase.from('posts').update({ is_solved: true }).eq('id', postId);
+    setDoubts(doubts.map(d => d.id === postId ? { ...d, is_solved: true } : d));
+    setActivePost(null); 
+    setDoubtsType('solved');
   };
 
   const handleDeletePost = async (postId) => {
+    const { supabase } = await import('./lib/supabaseClient');
+    await supabase.from('posts').delete().eq('id', postId);
     setDoubts(prev => prev.filter(d => d.id !== postId));
-    if (activePost && activePost.id === postId) {
-      setActivePost(null);
-    }
-    try {
-      await fetch(`http://localhost:3001/api/posts/${postId}`, {
-        method: 'DELETE'
-      });
-    } catch (e) {
-      console.error("Failed to delete post", e);
-    }
+    if (activePost && activePost.id === postId) setActivePost(null);
   };
 
   const handleUserUpvote = async (username, wingId, upvoterIsCreator = false) => {
-    if (!username || username.includes('Anonymous') || username === 'Unknown' || !wingId) return;
+    if (!username || username.includes('Anonymous') || !wingId) return;
+    const { supabase } = await import('./lib/supabaseClient');
     
-    // Sync to backend first
-    try {
-      const res = await fetch(`http://localhost:3001/api/users/${username}/increment-solved`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ incrementSolved: upvoterIsCreator })
-      });
-      if (res.ok) {
-        const updatedUser = await res.json();
-        // Update local currentUser if it matches
-        if (currentUser && currentUser.alias === username) {
-           setCurrentUser(updatedUser);
-        }
-        // Update viewedUser if it matches
-        if (viewedUser && viewedUser.alias === username) {
-           setViewedUser(updatedUser);
-        }
+    // Fetch current profile to increment
+    const { data: prof } = await supabase.from('profiles').select('xp, solved').eq('alias', username).single();
+    if (prof) {
+      const { data: updated } = await supabase
+        .from('profiles')
+        .update({ 
+          xp: prof.xp + 10, 
+          solved: upvoterIsCreator ? prof.solved + 1 : prof.solved 
+        })
+        .eq('alias', username)
+        .select()
+        .single();
+      
+      if (updated) {
+        if (currentUser?.alias === username) setCurrentUser(updated);
+        setContributors(prev => prev.map(p => p.alias === username ? { ...p, xp: updated.xp, solved: updated.solved } : p));
       }
-    } catch (e) { console.error("Failed to sync upvote to backend", e); }
-
-    setContributors(prev => {
-      const existing = prev.find(p => p.name === username);
-      if (existing) {
-        return prev.map(p => {
-          if (p.name === username) {
-            let newlySolved = typeof p.solved === 'string' ? parseInt(p.solved) : (p.solved || 0);
-            if (upvoterIsCreator) { newlySolved += 1; }
-            return { ...p, wingXp: { ...p.wingXp, [wingId]: (p.wingXp?.[wingId] || 0) + 10 }, solved: newlySolved };
-          }
-          return p;
-        });
-      } else {
-        return [...prev, { 
-          id: Date.now(), 
-          name: username, 
-          avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${Date.now()}`, 
-          solved: upvoterIsCreator ? 1 : 0, 
-          wingXp: { [wingId]: 10 } 
-        }];
-      }
-    });
+    }
   };
 
   const handlePostUpvote = async (postId) => {
-    if (!currentUser) return; // Must be logged in to upvote
+    if (!currentUser) return;
+    const { supabase } = await import('./lib/supabaseClient');
     
     const targetDoubt = doubts.find(d => d.id === postId);
     if (!targetDoubt) return;
 
     const upvotedTracker = targetDoubt.upvotedBy || [];
-    // Prevent duplicate upvotes entirely
     if (upvotedTracker.includes(currentUser.alias)) return;
 
-    // Valid upvote, update post state
-    setDoubts(prev => prev.map(d => 
-      d.id === postId 
-        ? { ...d, upvotes: (d.upvotes || 0) + 1, upvotedBy: [...upvotedTracker, currentUser.alias] }
-        : d
-    ));
+    // Upvote on Supabase
+    const { data: updatedPost } = await supabase
+      .from('posts')
+      .update({ 
+        upvotes: (targetDoubt.upvotes || 0) + 1,
+        upvoted_by: [...upvotedTracker, currentUser.alias]
+      })
+      .eq('id', postId)
+      .select()
+      .single();
 
-    // Also update activePost immediately if it's currently being viewed
-    if (activePost && activePost.id === postId) {
-      setActivePost(prev => ({ 
-        ...prev, 
-        upvotes: (prev.upvotes || 0) + 1, 
-        upvotedBy: [...upvotedTracker, currentUser.alias] 
-      }));
-    }
-
-    // Valid upvote, award XP to the post creator (if not anonymous)
-    if (targetDoubt.author && !targetDoubt.author.includes('Anonymous')) {
-      handleUserUpvote(targetDoubt.author, targetDoubt.wingId);
-    }
-
-    try {
-      await fetch(`http://localhost:3001/api/posts/${postId}/upvote`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alias: currentUser.alias })
-      });
-    } catch (e) {
-      console.error("Upvote backend sync failed", e);
+    if (updatedPost) {
+      setDoubts(prev => prev.map(d => d.id === postId ? { ...d, upvotes: updatedPost.upvotes, upvotedBy: updatedPost.upvoted_by } : d));
+      if (activePost && activePost.id === postId) {
+        setActivePost(prev => ({ ...prev, upvotes: updatedPost.upvotes, upvotedBy: updatedPost.upvoted_by }));
+      }
+      // Award XP to creator
+      if (targetDoubt.creatorAlias) {
+        handleUserUpvote(targetDoubt.creatorAlias, targetDoubt.wingId);
+      }
     }
   };
 
   const handleProfileClick = async (authorName) => {
     if (!authorName || authorName.includes('Anonymous')) return;
-    try {
-      const profileRes = await fetch(`http://localhost:3001/api/users/${authorName}`);
-      if (profileRes.ok) {
-        const user = await profileRes.json();
-        setViewedUser(user);
-        setCurrentView('dashboard');
-      } else {
-        throw new Error("User not found");
-      }
-    } catch(e) { 
-      const mock = contributors.find(c => c.name === authorName);
-      setViewedUser(mock ? { alias: mock.name, avatar: mock.avatar, solved: mock.solved, name: mock.fullName } : { alias: authorName, avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${authorName}`, solved: 0 });
+    const { supabase } = await import('./lib/supabaseClient');
+    const { data: user } = await supabase.from('profiles').select('*').eq('alias', authorName).single();
+    if (user) {
+      setViewedUser(user);
       setCurrentView('dashboard');
     }
   };
@@ -420,30 +366,13 @@ function App() {
        setCurrentView('landing');
        return;
     }
-    if (view === 'dashboard') {
-       setViewedUser(null);
-    }
+    if (view === 'dashboard') setViewedUser(null);
     setCurrentView(view);
-    if (tabOverride) {
-      setActiveTab(tabOverride);
-    }
-
+    if (tabOverride) setActiveTab(tabOverride);
     if (userData) {
-      const rollNumber = userData.rollNumber || 'LCI2024001';
-      setCurrentUser({ ...userData, rollNumber });
-      
-      // Auto-update global contributors so rank populates correctly on first login
+      setCurrentUser(userData);
       setContributors(prev => {
-        if (!prev.find(p => p.name === userData.alias)) {
-           return [...prev, { 
-             id: Date.now(), 
-             name: userData.alias, 
-             fullName: userData.name, 
-             avatar: userData.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${rollNumber}`, 
-             solved: 0, 
-             wingXp: { general: 0 } 
-           }];
-        }
+        if (!prev.find(p => p.alias === userData.alias)) return [...prev, { ...userData, name: userData.alias }];
         return prev;
       });
     }
@@ -465,17 +394,15 @@ function App() {
         onNavigate={handleNavigate} 
         onUpdateUser={(updated) => {
            setCurrentUser(updated);
-           setContributors(prev => prev.map(c => c.name === updated.alias ? { ...c, avatar: updated.avatar, fullName: updated.name } : c));
+           setContributors(prev => prev.map(c => c.alias === updated.alias ? { ...c, ...updated } : c));
         }}
         onViewThread={(doubt) => {
            setViewedUser(null);
            handleNavigate('app');
            setActivePost(doubt);
         }} 
-        onCommentAdded={(postId, isResource) => {
-           const updateFn = prev => prev.map(item => item.id === postId ? { ...item, solutions: (item.solutions || 0) + 1 } : item);
-           if (isResource) setResources(updateFn);
-           else setDoubts(updateFn);
+        onCommentAdded={(postId) => {
+           setDoubts(prev => prev.map(item => item.id === postId ? { ...item, solutions: (item.solutions || 0) + 1 } : item));
            if (activePost && activePost.id === postId) {
              setActivePost(prev => ({ ...prev, solutions: (prev.solutions || 0) + 1 }));
            }

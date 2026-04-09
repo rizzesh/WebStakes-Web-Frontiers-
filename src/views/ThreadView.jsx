@@ -9,28 +9,21 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    // In a real app we'd fetch the comments here. Fetching `/api/posts/:id/comments`
     const fetchComments = async () => {
-      try {
-        const res = await fetch(`http://localhost:3001/api/posts/${post.id}`);
-        if (res.ok) {
-          const data = await res.json();
-          // Assuming the backend sends a flat list or nested tree, we handle the tree here
-          setComments(buildCommentTree(data.comments || []));
-        } else {
-          // Fallback mock comments
-          setComments(buildCommentTree([
-            { id: 101, post_id: post.id, text_content: 'This is a great question!', parent_comment_id: null, author: { alias: 'Senior_Dev' } },
-            { id: 102, post_id: post.id, text_content: 'I agree, checking out state management guides is key.', parent_comment_id: 101, author: { alias: 'Web_Wizard' } },
-            { id: 103, post_id: post.id, text_content: 'Have you tried standard context API?', parent_comment_id: null, author: { alias: 'Anonymous_User' } },
-          ]));
-        }
-      } catch (err) {
-        // Fallback for when backend isn't up
-        setComments(buildCommentTree([
-          { id: 101, post_id: post.id, text_content: 'Have you tried simplifying your state?', parent_comment_id: null, author: { alias: 'Senior_Dev' } },
-          { id: 102, post_id: post.id, text_content: 'I agree, sometimes too deeply nested state is an anti-pattern.', parent_comment_id: 101, author: { alias: 'Web_Wizard' } },
-        ]));
+      const { supabase } = await import('../lib/supabaseClient');
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*, profiles(*)')
+        .eq('post_id', post.id)
+        .order('created_at', { ascending: true });
+
+      if (data) {
+        const mapped = data.map(c => ({
+          ...c,
+          parent_comment_id: c.parent_id,
+          author: c.is_anonymous ? { alias: 'Anonymous', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=anon' } : { alias: c.profiles?.alias, avatar: c.profiles?.avatar }
+        }));
+        setComments(buildCommentTree(mapped));
       }
     };
     fetchComments();
@@ -42,8 +35,7 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
     const rootComments = [];
 
     flatComments.forEach(c => {
-      const maskedAuthor = c.is_anonymous ? { alias: 'Anonymous', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=anon' } : c.author;
-      commentMap[c.id] = { ...c, author: maskedAuthor, child_comments: [] };
+      commentMap[c.id] = { ...c, child_comments: [] };
     });
 
     flatComments.forEach(c => {
@@ -59,82 +51,31 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
     return rootComments;
   };
 
-  const formatDateTime = (dateStr) => {
-    if (!dateStr) return 'just now';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return dateStr;
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${day}/${month} ${hours}:${minutes}`;
-  };
-
   const handleCreateComment = async (parentId, text, isAnon) => {
-    // Optimistic UI update or real backend call
-    const payload = {
-      post_id: post.id,
-      text_content: text,
-      parent_comment_id: parentId,
-      is_anonymous: isAnon,
-      alias: currentUser?.alias
-    };
-
-    try {
-      const res = await fetch('http://localhost:3001/api/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      if (res.ok) {
-        const newDbComment = await res.json();
-        
-        const maskedAuthor = newDbComment.is_anonymous ? { alias: 'Anonymous', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=anon' } : (newDbComment.author || {});
-
-        // Structure the created comment like our frontend expects
-        const newCommentObj = {
-          id: newDbComment.id || Date.now(),
-          post_id: newDbComment.post_id || post.id,
-          text_content: newDbComment.text_content || text,
-          parent_comment_id: newDbComment.parent_comment_id || parentId,
-          author: { alias: maskedAuthor.alias || 'Unknown', avatar: maskedAuthor.avatar },
-          created_at: newDbComment.created_at,
-          child_comments: []
-        };
-
-        if (!parentId) {
-          setComments([...comments, newCommentObj]);
-        } else {
-          const insertRecursive = (nodes) => {
-            for (let node of nodes) {
-              if (node.id === parentId) {
-                node.child_comments = node.child_comments || [];
-                node.child_comments.push(newCommentObj);
-                return true;
-              }
-              if (node.child_comments && insertRecursive(node.child_comments)) {
-                return true;
-              }
-            }
-            return false;
-          };
-          const newTree = [...comments];
-          insertRecursive(newTree);
-          setComments(newTree);
-        }
-      } else {
-        throw new Error('Backend not available');
-      }
-    } catch {
-      // Mock Fallback UI logic
-      const newCommentObj = {
-        id: Date.now(),
+    const { supabase } = await import('../lib/supabaseClient');
+    
+    const { data: newDbComment, error } = await supabase
+      .from('comments')
+      .insert([{
         post_id: post.id,
+        author_id: currentUser.id,
+        parent_id: parentId,
         text_content: text,
-        parent_comment_id: parentId,
-        author: { alias: isAnon ? 'Anonymous' : (currentUser?.alias || 'CipherScholar_01'), avatar: isAnon ? 'https://api.dicebear.com/7.x/bottts/svg?seed=anon' : (currentUser?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default') },
-        created_at: new Date().toISOString(),
+        is_anonymous: isAnon
+      }])
+      .select('*, profiles(*)')
+      .single();
+
+    if (newDbComment) {
+      const maskedAuthor = newDbComment.is_anonymous ? { alias: 'Anonymous', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=anon' } : { alias: newDbComment.profiles.alias, avatar: newDbComment.profiles.avatar };
+      
+      const newCommentObj = {
+        id: newDbComment.id,
+        post_id: newDbComment.post_id,
+        text_content: newDbComment.text_content,
+        parent_comment_id: newDbComment.parent_id,
+        author: maskedAuthor,
+        created_at: newDbComment.created_at,
         child_comments: []
       };
 
@@ -147,9 +88,7 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
               node.child_comments.push(newCommentObj);
               return true;
             }
-            if (node.child_comments && insertRecursive(node.child_comments)) {
-              return true;
-            }
+            if (node.child_comments && insertRecursive(node.child_comments)) return true;
           }
           return false;
         };
@@ -157,24 +96,21 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
         insertRecursive(newTree);
         setComments(newTree);
       }
+      if (onCommentAdded) onCommentAdded(post.id);
     }
-    if (onCommentAdded) onCommentAdded();
   };
 
   const handleDeleteComment = async (commentId) => {
-    const removeComment = (nodes) => {
+    const { supabase } = await import('../lib/supabaseClient');
+    await supabase.from('comments').delete().eq('id', commentId);
+    
+    const removeRecursive = (nodes) => {
       return nodes.filter(c => c.id !== commentId).map(c => ({
         ...c,
-        child_comments: removeComment(c.child_comments || [])
+        child_comments: removeRecursive(c.child_comments || [])
       }));
     };
-    setComments(prev => removeComment(prev));
-
-    try {
-      await fetch(`http://localhost:3001/api/comments/${commentId}`, { method: 'DELETE' });
-    } catch(e) {
-      console.error(e);
-    }
+    setComments(prev => removeRecursive(prev));
   };
 
   const submitTopLevel = () => {

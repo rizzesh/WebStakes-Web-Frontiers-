@@ -16,6 +16,8 @@ export default function LandingPage({ onNavigate, currentUser }) {
     e.preventDefault();
     setAuthError('');
 
+    const { supabase } = await import('../lib/supabaseClient');
+
     if (isLoginMode) {
       if (!identifier || !password) {
         setAuthError('ID / Alias and Password required.');
@@ -26,28 +28,83 @@ export default function LandingPage({ onNavigate, currentUser }) {
         setAuthError('Username, Roll Number, and Password are required.');
         return;
       }
+      if (!rollNumber.match(/^[a-zA-Z]{3}\d{7}$/)) {
+        setAuthError('Invalid IIITL Roll Number format (e.g. LCI2024001)');
+        return;
+      }
     }
 
     try {
-      const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
-      const payload = isLoginMode 
-        ? { identifier, password } 
-        : { alias, rollNumber: rollNumber.toUpperCase(), name, password };
+      if (isLoginMode) {
+        // 1. Identify if it's an alias or roll number
+        let email = "";
+        if (identifier.match(/^[a-zA-Z]{3}\d{7}$/i)) {
+          email = `${identifier.toLowerCase()}@iiitl.ac.in`;
+        } else {
+          // It's an alias, we need to find the roll number from the profiles table
+          const { data: profile, error: profileErr } = await supabase
+            .from('profiles')
+            .select('roll_number')
+            .eq('alias', identifier)
+            .single();
+          
+          if (profileErr || !profile) throw new Error('Alias not found or invalid.');
+          email = `${profile.roll_number.toLowerCase()}@iiitl.ac.in`;
+        }
 
-      const res = await fetch(`http://localhost:3001${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        // 2. Sign in with Supabase
+        const { data: authData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-      const data = await res.json();
+        if (signInErr) throw signInErr;
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Authentication failed.');
+        // 3. Fetch full profile
+        const { data: fullProfile, error: fetchErr } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (fetchErr) throw fetchErr;
+        onNavigate('app', null, fullProfile);
+
+      } else {
+        // REGISTRATION
+        const email = `${rollNumber.toLowerCase()}@iiitl.ac.in`;
+        
+        // 1. Sign up with Supabase Auth
+        const { data: authData, error: signUpErr } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (signUpErr) throw signUpErr;
+        if (!authData.user) throw new Error("Registration failed.");
+
+        // 2. Create entry in profiles table
+        const { data: newProfile, error: profileErr } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: authData.user.id,
+              alias: alias,
+              name: name,
+              roll_number: rollNumber.toUpperCase(),
+              avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${rollNumber.toUpperCase()}`
+            }
+          ])
+          .select()
+          .single();
+
+        if (profileErr) {
+          // If profile creation fails, we might want to delete the auth user or notify
+          throw new Error(`Profile creation failed: ${profileErr.message}`);
+        }
+
+        onNavigate('app', null, newProfile);
       }
-
-      // data contains the user object returned from backend
-      onNavigate('app', null, data);
     } catch (err) {
       setAuthError(`ACCESS BLOCKED: ${err.message}`);
     }
