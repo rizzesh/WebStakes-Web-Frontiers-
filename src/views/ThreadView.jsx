@@ -59,6 +59,17 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
     return rootComments;
   };
 
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return 'just now';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month} ${hours}:${minutes}`;
+  };
+
   const handleCreateComment = async (parentId, text, isAnon) => {
     // Optimistic UI update or real backend call
     const payload = {
@@ -88,6 +99,7 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
           text_content: newDbComment.text_content || text,
           parent_comment_id: newDbComment.parent_comment_id || parentId,
           author: { alias: maskedAuthor.alias || 'Unknown', avatar: maskedAuthor.avatar },
+          created_at: newDbComment.created_at,
           child_comments: []
         };
 
@@ -122,6 +134,7 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
         text_content: text,
         parent_comment_id: parentId,
         author: { alias: isAnon ? 'Anonymous' : (currentUser?.alias || 'CipherScholar_01'), avatar: isAnon ? 'https://api.dicebear.com/7.x/bottts/svg?seed=anon' : (currentUser?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default') },
+        created_at: new Date().toISOString(),
         child_comments: []
       };
 

@@ -248,10 +248,10 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
               return (
                 <div key={doubt.id} style={{ background: 'rgba(25,12,35,0.6)', border: '1px solid rgba(168,85,247,0.1)', borderRadius: '12px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backdropFilter: 'blur(10px)' }}>
                   <div style={{ flex: 1, paddingRight: '24px' }}>
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
-                       <span style={{ backgroundColor: 'rgba(255,255,255,0.08)', padding: '4px 8px', borderRadius: '4px', color: '#d4d4d8', fontSize: '10px', fontWeight: 700 }}>{wing.name.toUpperCase()}</span>
-                       <span style={{ color: '#71717a', fontSize: '12px' }}>{doubt.time}</span>
-                    </div>
+                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
+                        <span style={{ backgroundColor: 'rgba(255,255,255,0.08)', padding: '4px 8px', borderRadius: '4px', color: '#d4d4d8', fontSize: '10px', fontWeight: 700 }}>{wing.name.toUpperCase()}</span>
+                        <span style={{ color: '#71717a', fontSize: '12px' }}>{doubt.time}</span>
+                     </div>
                     <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'white', margin: 0, letterSpacing: '-0.2px' }}>{doubt.title}</h3>
                   </div>
 

@@ -77,6 +77,20 @@ const INITIAL_RESOURCES = [
 const getTotalXp = (wingXp) => Object.values(wingXp || {}).reduce((a, b) => a + b, 0);
 const getWingXp = (wingXp, wingId) => (wingXp || {})[wingId] || 0;
 
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return 'just now';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
 function App() {
   const [currentView, setCurrentView] = useState(() => {
     return localStorage.getItem('iiitldoubtmask_view') || 'landing';
@@ -175,14 +189,15 @@ function App() {
             creatorAlias: p.author?.alias || '',
             author: p.is_anonymous ? 'Anonymous (Masked)' : p.author?.alias || 'Unknown',
             avatar: p.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : p.author?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default',
-            time: p.created_at ? new Date(p.created_at).toLocaleDateString() : 'just now',
+            time: formatDateTime(p.created_at),
             title: p.title,
             snippet: p.text_content,
             solutions: p._count?.comments || 0,
             upvotes: p.upvotes || 0,
             image_url: p.image_url,
             is_solved: p.is_solved,
-            upvotedBy: p.upvotedBy ? JSON.parse(p.upvotedBy).filter(Boolean) : []
+            upvotedBy: p.upvotedBy ? JSON.parse(p.upvotedBy).filter(Boolean) : [],
+            created_at: p.created_at
           }));
           setDoubts(backendDoubts);
         }
@@ -219,7 +234,7 @@ function App() {
           wingId: newDbPost.wing_id,
           author: newDbPost.is_anonymous ? 'Anonymous (Masked)' : (newDbPost.author?.alias || currentUser?.alias || 'Unknown'),
           avatar: newDbPost.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : (newDbPost.author?.avatar || currentUser?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default'),
-          time: 'just now',
+          time: formatDateTime(new Date()),
           title: newDbPost.title,
           snippet: newDbPost.text_content,
           solutions: 0,

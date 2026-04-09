@@ -28,6 +28,17 @@ export default function Comment({ comment, onReply, onDelete, onUserUpvote, onPr
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return 'just now';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month} ${hours}:${minutes}`;
+  };
+
   return (
     <div className="comment-wrapper">
       <div className="comment-header">
@@ -39,7 +50,7 @@ export default function Comment({ comment, onReply, onDelete, onUserUpvote, onPr
         >
            {comment.author?.alias || 'Unknown'}
         </span>
-        <span className="comment-time">just now</span>
+        <span className="comment-time">{formatDateTime(comment.created_at || comment.time)}</span>
       </div>
       
       <div className="comment-body">
