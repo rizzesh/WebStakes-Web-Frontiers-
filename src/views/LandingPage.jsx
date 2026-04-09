@@ -74,39 +74,42 @@ export default function LandingPage({ onNavigate, currentUser }) {
         // REGISTRATION
         const email = `${rollNumber.toLowerCase()}@iiitl.ac.in`;
         
-        // 1. Sign up with Supabase Auth
+        // 1. Sign up with Supabase Auth + Metadata
         const { data: authData, error: signUpErr } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              alias: alias,
+              full_name: name,
+              roll_number: rollNumber.toUpperCase()
+            }
+          }
         });
 
         if (signUpErr) throw signUpErr;
         if (!authData.user) throw new Error("Registration failed.");
 
-        // 2. Create entry in profiles table
+        // 2. Fetch the profile created by the Database Trigger
+        // We wait a tiny bit to ensure the trigger finishes
         const { data: newProfile, error: profileErr } = await supabase
           .from('profiles')
-          .insert([
-            {
-              id: authData.user.id,
-              alias: alias,
-              name: name,
-              roll_number: rollNumber.toUpperCase(),
-              avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${rollNumber.toUpperCase()}`
-            }
-          ])
-          .select()
+          .select('*')
+          .eq('id', authData.user.id)
           .single();
 
-        if (profileErr) {
-          // If profile creation fails, we might want to delete the auth user or notify
-          throw new Error(`Profile creation failed: ${profileErr.message}`);
+        if (profileErr || !newProfile) {
+          throw new Error("Profile creation in progress. Please try logging in.");
         }
 
         onNavigate('app', null, newProfile);
       }
     } catch (err) {
-      setAuthError(`ACCESS BLOCKED: ${err.message}`);
+      console.error("AUTH ERROR DIAGNOSTICS:", err);
+      let friendlyMsg = err.message;
+      if (err.message.includes('profiles_alias_key')) friendlyMsg = "This Username (Alias) is already taken.";
+      if (err.message.includes('profiles_roll_number_key')) friendlyMsg = "This Roll Number is already registered.";
+      setAuthError(`ACCESS BLOCKED: ${friendlyMsg}`);
     }
   };
 
