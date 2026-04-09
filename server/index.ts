@@ -189,6 +189,20 @@ app.patch('/api/posts/:id/upvote', async (req, res) => {
   }
 });
 
+// Mark Post as Solved
+app.patch('/api/posts/:id/solve', async (req, res) => {
+  try {
+    const post = await prisma.post.update({
+      where: { id: parseInt(req.params.id) },
+      data: { is_solved: true }
+    });
+    res.json(post);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to solve post' });
+  }
+});
+
 // Create Comment
 app.post('/api/comments', async (req, res) => {
   try {

@@ -269,14 +269,28 @@ function App() {
   };
 
   const handleMarkSolved = async (postId) => {
-    // In a real app we would PATCH /api/posts/:id/solve
-    const updatedDoubts = doubts.map(d => 
-      d.id === postId ? { ...d, is_solved: true } : d
-    );
-    setDoubts(updatedDoubts);
-    // Optionally close the thread view here, or simply show a success toast.
-    setActivePost(null); 
-    setDoubtsType('solved'); // redirect to solved tab to show it worked
+    try {
+      const res = await fetch(`http://localhost:3001/api/posts/${postId}/solve`, {
+        method: 'PATCH'
+      });
+      if (!res.ok) throw new Error('Backend failed');
+      
+      const updatedDoubts = doubts.map(d => 
+        d.id === postId ? { ...d, is_solved: true } : d
+      );
+      setDoubts(updatedDoubts);
+      setActivePost(null); 
+      setDoubtsType('solved');
+    } catch(e) {
+      console.error("Failed to solve doubt", e);
+      // Fallback local update
+      const updatedDoubts = doubts.map(d => 
+        d.id === postId ? { ...d, is_solved: true } : d
+      );
+      setDoubts(updatedDoubts);
+      setActivePost(null); 
+      setDoubtsType('solved');
+    }
   };
 
   const handleDeletePost = async (postId) => {
