@@ -113,7 +113,7 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
                 <div style={{ fontSize: '18px', color: theme.primary, fontWeight: 600, marginBottom: '12px' }}>{displayUser.name}</div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', marginBottom: displayUser?.description ? '16px' : '0' }}>
-                <span style={{ backgroundColor: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '4px', color: '#a1a1aa', fontWeight: 600, letterSpacing: '0.5px', fontSize: '11px', textTransform: 'uppercase' }}>{displayUser?.rollNumber || 'LCI2024001'}</span>
+                <span style={{ backgroundColor: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: '4px', color: '#a1a1aa', fontWeight: 600, letterSpacing: '0.5px', fontSize: '11px', textTransform: 'uppercase' }}>{displayUser?.roll_number || displayUser?.rollNumber || 'LCI2024001'}</span>
               </div>
               {displayUser?.description && (
                 <p style={{ fontSize: '14px', color: '#d4d4d8', maxWidth: '600px', lineHeight: 1.5 }}>
@@ -210,7 +210,8 @@ export default function DashboardPage({ currentUser, viewedUser, doubts, contrib
                             .single();
 
                          if (updated) {
-                            if (onUpdateUser) onUpdateUser(updated);
+                            const mappedUser = { ...updated, rollNumber: updated.roll_number };
+                            if (onUpdateUser) onUpdateUser(mappedUser);
                             setIsEditing(false);
                          } else if (error) {
                             console.error(error);

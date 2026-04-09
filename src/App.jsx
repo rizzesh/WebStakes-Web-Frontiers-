@@ -154,6 +154,7 @@ function App() {
           creatorAlias: p.profiles?.alias,
           author: p.is_anonymous ? 'Anonymous (Masked)' : p.profiles?.alias || 'Unknown',
           avatar: p.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : p.profiles?.avatar,
+          rollNumber: p.profiles?.roll_number,
           time: formatDateTime(p.created_at),
           title: p.title,
           snippet: p.text_content,
@@ -366,13 +367,19 @@ function App() {
        setCurrentView('landing');
        return;
     }
+    if (view === 'app') setDoubtsType('unsolved'); // Default to Unsolved on app entry
     if (view === 'dashboard') setViewedUser(null);
     setCurrentView(view);
     if (tabOverride) setActiveTab(tabOverride);
     if (userData) {
-      setCurrentUser(userData);
+      // Map database property to frontend property
+      const mappedUser = {
+        ...userData,
+        rollNumber: userData.roll_number || userData.rollNumber
+      };
+      setCurrentUser(mappedUser);
       setContributors(prev => {
-        if (!prev.find(p => p.alias === userData.alias)) return [...prev, { ...userData, name: userData.alias }];
+        if (!prev.find(p => p.alias === mappedUser.alias)) return [...prev, { ...mappedUser, name: mappedUser.alias }];
         return prev;
       });
     }
