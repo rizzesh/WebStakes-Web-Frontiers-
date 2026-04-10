@@ -1,0 +1,27 @@
+:root {
+  /* Dynamic App Colors */
+  --bg-dark: #121212;
+  --bg-panel: #1A1A1B;
+  --bg-surface: #272729;
+  --bg-surface-hover: #343536;
+  
+  --text-primary: #D7DADC;
+  --text-secondary: #818384;
+  --text-muted: #565758;
+
+  --border-color: #343536;
+
+  /* Wing specific colors */
+  --color-app: #10B981; /* Emerald Green */
+  --color-foss: #FF4500; /* Orange Red */
+  --color-ml: #007BFF; /* Electric Blue */
+  --color-web: #F5C518; /* Solar Yellow */
+  --color-cp: #FFBF00; /* Amber Gold */
+  --color-infosec: #DC143C; /* Crimson Red */
+  --color-design: #DA70D6; /* Orchid Purple */
+  --color-web3: #00FFFF; /* Diamond Cyan */
+  --color-general: #C0C0C0; /* Neutral Silver */
+
+  /* Set default active color to general */
+  --active-color: var(--color-general);
+}
