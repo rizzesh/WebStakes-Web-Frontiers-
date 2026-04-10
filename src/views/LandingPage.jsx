@@ -18,6 +18,12 @@ export default function LandingPage({ onNavigate, currentUser }) {
 
     const { supabase } = await import('../lib/supabaseClient');
 
+    // CONFIGURATION CHECK
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      setAuthError('SYSTEM CONFIGURATION ERROR: Backend API keys are missing on this deployment. Please verify environment settings.');
+      return;
+    }
+
     if (isLoginMode) {
       if (!identifier || !password) {
         setAuthError('ID / Alias and Password required.');
