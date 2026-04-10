@@ -277,7 +277,6 @@ function App() {
 
     if (error) {
       console.error("Doubt Posting Error:", error);
-      alert(`FAILED TO POST DOUBT: ${error.message}${error.hint ? ' - ' + error.hint : ''}`);
       return;
     }
 
