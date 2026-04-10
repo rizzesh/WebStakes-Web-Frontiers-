@@ -14,7 +14,7 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
       const { data, error } = await supabase
         .from('comments')
         .select('*, profiles(*)')
-        .eq('post_id', post.id)
+        .eq(post.isResource ? 'resource_id' : 'post_id', post.id)
         .order('created_at', { ascending: true });
 
       if (data) {
@@ -57,7 +57,8 @@ export default function ThreadView({ post, onBack, onMarkSolved, onDeletePost, o
     const { data: newDbComment, error } = await supabase
       .from('comments')
       .insert([{
-        post_id: post.id,
+        post_id: post.isResource ? null : post.id,
+        resource_id: post.isResource ? post.id : null,
         author_id: currentUser.id,
         parent_id: parentId,
         text_content: text,

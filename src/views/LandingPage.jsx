@@ -107,8 +107,21 @@ export default function LandingPage({ onNavigate, currentUser }) {
     } catch (err) {
       console.error("AUTH ERROR DIAGNOSTICS:", err);
       let friendlyMsg = err.message;
-      if (err.message.includes('profiles_alias_key')) friendlyMsg = "This Username (Alias) is already taken.";
-      if (err.message.includes('profiles_roll_number_key')) friendlyMsg = "This Roll Number is already registered.";
+      
+      // SCRUB ALL TERMINOLOGY RELATING TO EMAIL SO THE USER NEVER SEES IT
+      if (err.message.toLowerCase().includes('email')) {
+        friendlyMsg = "Account access is currently restricted. Please check system settings.";
+      }
+      if (err.message.includes('profiles_alias_key')) {
+        friendlyMsg = "This Username (Alias) is already taken.";
+      }
+      if (err.message.includes('profiles_roll_number_key')) {
+        friendlyMsg = "This Roll Number is already registered.";
+      }
+      if (err.message.includes('Invalid login credentials')) {
+        friendlyMsg = "Incorrect Roll Number / Username or Password.";
+      }
+
       setAuthError(`ACCESS BLOCKED: ${friendlyMsg}`);
     }
   };

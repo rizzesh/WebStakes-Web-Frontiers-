@@ -24,56 +24,6 @@ const WINGS = [
   { id: 'web3', name: 'Web3 Wing', icon: Box, color: 'var(--color-web3)' },
 ];
 
-const INITIAL_MOCK_DOUBTS = [
-  {
-    id: 1,
-    wingId: 'app',
-    author: 'Dev_Cipher',
-    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=1',
-    time: '15 min ago',
-    title: 'Handling nested state updates in Riverpod 2.0 with custom providers?',
-    snippet: 'I\'m running into an issue where the UI doesn\'t rebuild when a deeply nested property in my StateNotifier changes. I\'ve tried using copyWith, but it feels clunky...',
-    solutions: 12,
-    upvotes: 45,
-    is_solved: false
-  },
-  {
-    id: 2,
-    wingId: 'foss',
-    author: 'Kernel_Panic_404',
-    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=2',
-    time: '1 hour ago',
-    title: 'Implementing a custom trait for async closures in Rust?',
-    snippet: 'Having trouble with the borrow checker when passing async closures to a generic function that requires a specific trait bound. Any workaround for Lifetime constraints?',
-    solutions: 4,
-    upvotes: 28,
-    is_solved: false
-  },
-  {
-    id: 3,
-    wingId: 'ml',
-    author: 'NeuralNet_Queen',
-    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=3',
-    time: '3 hours ago',
-    title: 'Optimizing Transformer training on limited VRAM (RTX 3060)?',
-    snippet: 'I\'m trying to fine-tune Llama-3 but keep hitting OOM errors. Is DeepSpeed or BitsAndBytes the best path for an 8GB card, or should I stick to LoRA?',
-    solutions: 22,
-    upvotes: 112,
-    is_solved: true
-  }
-];
-
-const MOCK_CONTRIBUTORS = [
-  { id: 1, name: 'Nexus_Master', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=4', solved: '1.2k', wingXp: { app: 140, foss: 100 } },
-  { id: 2, name: 'Web_Wizard', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=5', solved: '980', wingXp: { web: 150, app: 30 } },
-  { id: 3, name: 'Bit_Commander', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=6', solved: '850', wingXp: { ml: 50, cp: 100 } },
-];
-
-const INITIAL_RESOURCES = [
-  { id: 1, wingId: 'web', type: 'link', content: 'https://developer.mozilla.org/en-US/docs/Web', title: 'MDN Web Docs', author: 'Web_Wizard', time: '2 days ago' },
-  { id: 2, wingId: 'ml', type: 'text', content: 'Always check if you have NaN in your dataset before compiling the model.', title: 'Quick tip for NaN gradients', author: 'NeuralNet_Queen', time: '1 week ago' }
-];
-
 const getTotalXp = (wingXp) => Object.values(wingXp || {}).reduce((a, b) => a + b, 0);
 const getWingXp = (wingXp, wingId) => (wingXp || {})[wingId] || 0;
 
@@ -90,6 +40,53 @@ const formatDateTime = (dateStr) => {
   
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 };
+
+// Skeleton UI Components
+const DoubtSkeleton = () => (
+  <div className="doubt-card skeleton-rect" style={{ padding: '24px', marginBottom: '16px', opacity: 0.5 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+      <div className="skeleton skeleton-circle" style={{ width: '32px', height: '32px' }}></div>
+      <div style={{ flex: 1 }}>
+        <div className="skeleton skeleton-text" style={{ width: '120px', height: '14px' }}></div>
+        <div className="skeleton skeleton-text" style={{ width: '80px', height: '10px' }}></div>
+      </div>
+    </div>
+    <div className="skeleton skeleton-text" style={{ width: '60%', height: '18px', marginBottom: '16px' }}></div>
+    <div className="skeleton skeleton-text" style={{ width: '90%' }}></div>
+    <div className="skeleton skeleton-text" style={{ width: '40%' }}></div>
+    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
+      <div className="skeleton skeleton-text" style={{ width: '100px', height: '20px', margin: 0 }}></div>
+      <div className="skeleton skeleton-text" style={{ width: '80px', height: '20px', margin: 0 }}></div>
+    </div>
+  </div>
+);
+
+const LeaderboardSkeleton = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '12px', marginBottom: '12px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+      <div className="skeleton skeleton-text" style={{ width: '20px', margin: 0 }}></div>
+      <div className="skeleton skeleton-circle" style={{ width: '40px', height: '40px' }}></div>
+      <div style={{ flex: 1 }}>
+        <div className="skeleton skeleton-text" style={{ width: '120px', height: '14px', marginBottom: '6px' }}></div>
+        <div className="skeleton skeleton-text" style={{ width: '80px', height: '10px', margin: 0 }}></div>
+      </div>
+    </div>
+    <div className="skeleton skeleton-text" style={{ width: '60px', height: '20px', margin: 0 }}></div>
+  </div>
+);
+
+const SidebarSkeleton = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="skeleton skeleton-circle" style={{ width: '36px', height: '36px' }}></div>
+      <div>
+        <div className="skeleton skeleton-text" style={{ width: '80px', height: '12px', marginBottom: '6px' }}></div>
+        <div className="skeleton skeleton-text" style={{ width: '60px', height: '8px', margin: 0 }}></div>
+      </div>
+    </div>
+    <div className="skeleton skeleton-text" style={{ width: '40px', height: '16px', margin: 0 }}></div>
+  </div>
+);
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
@@ -118,15 +115,11 @@ function App() {
   const [doubtsType, setDoubtsType] = useState(() => {
     return localStorage.getItem('iiitldoubtmask_doubtsType') || 'unsolved';
   });
-  const [contributors, setContributors] = useState(() => {
-    const saved = localStorage.getItem('iiitldoubtmask_contributors');
-    try { return saved && saved !== 'undefined' ? JSON.parse(saved) : MOCK_CONTRIBUTORS; } catch { return MOCK_CONTRIBUTORS; }
-  });
+  const [contributors, setContributors] = useState([]);
   
   // New States for Doubt Flow & Thread
   const [doubts, setDoubts] = useState(() => {
-    const saved = localStorage.getItem('iiitldoubtmask_doubts');
-    try { return saved && saved !== 'undefined' ? JSON.parse(saved) : INITIAL_MOCK_DOUBTS; } catch { return INITIAL_MOCK_DOUBTS; }
+    return []; // Always start fresh from Supabase to avoid stale mock data
   });
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [activePost, setActivePost] = useState(() => {
@@ -140,34 +133,78 @@ function App() {
   
   const [resources, setResources] = useState([]);
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const init = async () => {
+      setIsLoading(true);
       const { supabase } = await import('./lib/supabaseClient');
       
       // 1. Fetch Posts & Contributors
-      const { data: posts } = await supabase.from('posts').select('*, profiles(*), comments(count)').order('created_at', { ascending: false });
-      if (posts) {
-        setDoubts(posts.map(p => ({
-          id: p.id,
-          wingId: p.wing_id,
-          creatorAlias: p.profiles?.alias,
-          author: p.is_anonymous ? 'Anonymous (Masked)' : p.profiles?.alias || 'Unknown',
-          avatar: p.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : p.profiles?.avatar,
-          rollNumber: p.profiles?.roll_number,
-          time: formatDateTime(p.created_at),
-          title: p.title,
-          snippet: p.text_content,
-          solutions: p.comments?.[0]?.count || 0,
-          upvotes: p.upvotes,
-          image_url: p.image_url,
-          is_solved: p.is_solved,
-          upvotedBy: p.upvoted_by || []
-        })));
-      }
+      try {
+        const { data: posts, error: postsErr } = await supabase
+          .from('posts')
+          .select('*, profiles(*), comments(count)')
+          .order('created_at', { ascending: false });
+        
+        if (posts) {
+          setDoubts(posts.map(p => ({
+            id: p.id,
+            wingId: p.wing_id,
+            creatorAlias: p.profiles?.alias,
+            author: p.is_anonymous ? 'Anonymous (Masked)' : p.profiles?.alias || 'Unknown',
+            avatar: p.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : p.profiles?.avatar,
+            rollNumber: p.profiles?.roll_number,
+            time: formatDateTime(p.created_at),
+            title: p.title,
+            snippet: p.text_content,
+            solutions: p.comments?.[0]?.count || 0,
+            upvotes: p.upvotes,
+            image_url: p.image_url,
+            is_solved: p.is_solved,
+            upvotedBy: p.upvoted_by || []
+          })));
+        }
 
-      const { data: profs } = await supabase.from('profiles').select('*');
-      if (profs) setContributors(profs.map(p => ({ ...p, name: p.alias, wingXp: { general: p.xp } })));
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('xp', { ascending: false });
+          
+        if (profs) {
+          setContributors(profs.map(p => ({ 
+            ...p, 
+            name: p.alias, 
+            wingXp: { general: p.xp },
+            solved: p.solved || 0
+          })));
+        }
+        const { data: rescs } = await supabase
+          .from('resources')
+          .select('*, profiles(*), comments(count)')
+          .order('created_at', { ascending: false });
+          
+        if (rescs) {
+          setResources(rescs.map(r => ({
+            id: r.id,
+            wingId: r.wing_id,
+            author: r.author_id ? r.profiles?.alias : 'System',
+            creatorAlias: r.profiles?.alias,
+            avatar: r.profiles?.avatar,
+            time: formatDateTime(r.created_at),
+            title: r.title,
+            content: r.content,
+            type: r.type,
+            solutions: r.comments?.[0]?.count || 0,
+            upvotes: r.upvotes,
+            upvotedBy: r.upvoted_by || []
+          })));
+        }
+      } catch (err) {
+        console.error("Initialization error:", err);
+      } finally {
+        setIsLoading(false);
+      }
     };
     init();
   }, []);
@@ -195,41 +232,20 @@ function App() {
     }
   }, [currentView, currentUser, activeWing, activeTab, doubtsType, activePost, viewedUser]);
 
-  const sortedContributors = [...contributors].map(user => ({
-    ...user,
-    displayXp: activeWing.id === 'general' ? getTotalXp(user.wingXp) : getWingXp(user.wingXp, activeWing.id)
-  })).sort((a,b) => b.displayXp - a.displayXp);
+  const sortedContributors = [...contributors]
+    // Aggressive filter for test accounts (no roll number OR name is one of the known technical ones)
+    .filter(c => {
+      const isTechnical = ['newtester', 'jon', 'Yash', 'tester1', 'tester2', 'CipherScholar_01'].includes(c.alias);
+      const hasRoll = !!(c.roll_number || c.rollNumber);
+      return hasRoll && !isTechnical;
+    })
+    .map(user => ({
+      ...user,
+      displayXp: activeWing.id === 'general' ? getTotalXp(user.wingXp) : getWingXp(user.wingXp, activeWing.id)
+    }))
+    .sort((a,b) => b.displayXp - a.displayXp);
 
-  useEffect(() => {
-    // Try to fetch from backend if running, otherwise keep fallback mocks
-    fetch('http://localhost:3001/api/posts')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data && data.length > 0) {
-          // Map backend DB fields to frontend mock names if needed
-          const backendDoubts = data.map(p => ({
-            id: p.id,
-            wingId: p.wing_id,
-            creatorAlias: p.author?.alias || '',
-            author: p.is_anonymous ? 'Anonymous (Masked)' : p.author?.alias || 'Unknown',
-            avatar: p.is_anonymous ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : p.author?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default',
-            time: formatDateTime(p.created_at),
-            title: p.title,
-            snippet: p.text_content,
-            solutions: p._count?.comments || 0,
-            upvotes: p.upvotes || 0,
-            image_url: p.image_url,
-            is_solved: p.is_solved,
-            upvotedBy: p.upvotedBy ? JSON.parse(p.upvotedBy).filter(Boolean) : [],
-            created_at: p.created_at
-          }));
-          setDoubts(backendDoubts);
-        }
-      })
-      .catch((e) => {
-        console.log("Using Mock data, backend offline.");
-      });
-  }, []);
+  // Legacy local-backend fetch removed. Pure Supabase logic is handled in the mount useEffect above.
 
   useEffect(() => {
     document.documentElement.style.setProperty('--active-color', activeWing.color);
@@ -259,6 +275,12 @@ function App() {
       .select('*, profiles(*), comments(count)')
       .single();
 
+    if (error) {
+      console.error("Doubt Posting Error:", error);
+      alert(`FAILED TO POST DOUBT: ${error.message}${error.hint ? ' - ' + error.hint : ''}`);
+      return;
+    }
+
     if (newPost) {
       const mapped = {
         id: newPost.id,
@@ -278,12 +300,48 @@ function App() {
     setIsAskModalOpen(false);
   };
 
-  const handleMarkSolved = async (postId) => {
+  const handleMarkSolved = async (postId, solverAlias) => {
     const { supabase } = await import('./lib/supabaseClient');
-    await supabase.from('posts').update({ is_solved: true }).eq('id', postId);
-    setDoubts(doubts.map(d => d.id === postId ? { ...d, is_solved: true } : d));
-    setActivePost(null); 
-    setDoubtsType('solved');
+    
+    // Call RPC to handle solve (marks post solved and awards XP to solver)
+    const { error } = await supabase.rpc('handle_solve', {
+      target_post_id: Number(postId),
+      solver_alias: solverAlias || currentUser.alias // Fallback to self if no specific solver (e.g. self-solved)
+    });
+    
+    if (!error) {
+      setDoubts(doubts.map(d => d.id === postId ? { ...d, is_solved: true } : d));
+      
+      // Update local solver stats for immediate feedback
+      const solver = solverAlias || currentUser.alias;
+      setContributors(prev => prev.map(p => 
+        p.alias === solver 
+          ? { ...p, xp: (p.xp || 0) + 50, solved: (p.solved || 0) + 1 } 
+          : p
+      ));
+      
+      // If we are the solver, update currentUser as well
+      if (currentUser.alias === solver) {
+        setCurrentUser(prev => ({
+          ...prev,
+          xp: (prev.xp || 0) + 50,
+          solved: (prev.solved || 0) + 1
+        }));
+      }
+      
+      setActivePost(null); 
+      setDoubtsType('solved');
+    } else {
+      console.error("Resolution Error:", error);
+      alert(`FAILED TO RESOLVE: ${error.message}`);
+      // Fallback
+      const { error: updateErr } = await supabase.from('posts').update({ is_solved: true }).eq('id', postId);
+      if (!updateErr) {
+        setDoubts(doubts.map(d => d.id === postId ? { ...d, is_solved: true } : d));
+        setActivePost(null); 
+        setDoubtsType('solved');
+      }
+    }
   };
 
   const handleDeletePost = async (postId) => {
@@ -327,26 +385,71 @@ function App() {
     const upvotedTracker = targetDoubt.upvotedBy || [];
     if (upvotedTracker.includes(currentUser.alias)) return;
 
-    // Upvote on Supabase
-    const { data: updatedPost } = await supabase
-      .from('posts')
-      .update({ 
-        upvotes: (targetDoubt.upvotes || 0) + 1,
-        upvoted_by: [...upvotedTracker, currentUser.alias]
-      })
-      .eq('id', postId)
-      .select()
-      .single();
+    // Upvote on Supabase via RPC
+    const { data: updatedPost, error } = await supabase
+      .rpc('handle_upvote', { 
+        target_post_id: Number(postId),
+        user_alias: currentUser.alias
+      });
 
-    if (updatedPost) {
-      setDoubts(prev => prev.map(d => d.id === postId ? { ...d, upvotes: updatedPost.upvotes, upvotedBy: updatedPost.upvoted_by } : d));
+    if (!error && updatedPost) {
+      // The RPC returns a single object but select() on RPC might wrap it
+      const postData = Array.isArray(updatedPost) ? updatedPost[0] : updatedPost;
+      
+      setDoubts(prev => prev.map(d => d.id === postId ? { 
+        ...d, 
+        upvotes: postData.upvotes, 
+        upvotedBy: postData.upvoted_by 
+      } : d));
+      
       if (activePost && activePost.id === postId) {
-        setActivePost(prev => ({ ...prev, upvotes: updatedPost.upvotes, upvotedBy: updatedPost.upvoted_by }));
+        setActivePost(prev => ({ 
+          ...prev, 
+          upvotes: postData.upvotes, 
+          upvotedBy: postData.upvoted_by 
+        }));
       }
-      // Award XP to creator
+      
+      // Update the contributor's XP locally for immediate feedback
       if (targetDoubt.creatorAlias) {
-        handleUserUpvote(targetDoubt.creatorAlias, targetDoubt.wingId);
+        setContributors(prev => prev.map(p => 
+          p.alias === targetDoubt.creatorAlias ? { ...p, xp: (p.xp || 0) + 10 } : p
+        ));
       }
+    } else {
+      console.error("Upvote failed:", error);
+      alert(`UPVOTE FAILED: ${error.message || 'Check database RPC.'}`);
+    }
+  };
+  
+  const handleResourceUpvote = async (resId) => {
+    if (!currentUser) return;
+    const { supabase } = await import('./lib/supabaseClient');
+    
+    // Call RPC
+    const { data: updatedRes, error } = await supabase
+      .rpc('handle_resource_upvote', {
+        target_res_id: Number(resId),
+        user_alias: currentUser.alias
+      });
+      
+    if (!error && updatedRes) {
+      const resData = Array.isArray(updatedRes) ? updatedRes[0] : updatedRes;
+      setResources(prev => prev.map(r => r.id === resId ? { 
+        ...r, 
+        upvotes: resData.upvotes, 
+        upvotedBy: resData.upvoted_by 
+      } : r));
+      
+      if (activePost && activePost.id === resId && activePost.isResource) {
+        setActivePost(prev => ({ 
+          ...prev, 
+          upvotes: resData.upvotes, 
+          upvotedBy: resData.upvoted_by 
+        }));
+      }
+    } else {
+       console.error("Resource upvote failed:", error);
     }
   };
 
@@ -434,9 +537,40 @@ function App() {
       {isResourceModalOpen && (
         <AddResourceModal 
           onClose={() => setIsResourceModalOpen(false)} 
-          onSubmit={(data) => {
-             const newRes = { id: Date.now(), ...data, author: currentUser?.alias || 'CipherScholar_01', time: 'just now', solutions: 0, upvotes: 0, upvotedBy: [] };
-             setResources([newRes, ...resources]);
+          onSubmit={async (data) => {
+             const { supabase } = await import('./lib/supabaseClient');
+             const { data: newRes, error } = await supabase
+               .from('resources')
+               .insert([{
+                 author_id: currentUser.id,
+                 wing_id: data.wingId,
+                 title: data.title,
+                 content: data.content,
+                 type: data.type
+               }])
+               .select('*, profiles(*)')
+               .single();
+
+             if (newRes) {
+               const mapped = {
+                 id: newRes.id,
+                 wingId: newRes.wing_id,
+                 author: newRes.profiles.alias,
+                 creatorAlias: newRes.profiles.alias,
+                 avatar: newRes.profiles.avatar,
+                 time: 'just now',
+                 title: newRes.title,
+                 content: newRes.content,
+                 type: newRes.type,
+                 solutions: 0,
+                 upvotes: 0,
+                 upvotedBy: []
+               };
+               setResources([mapped, ...resources]);
+             } else if (error) {
+               console.error("Resource Upload Error:", error);
+               alert(`FAILED TO ARCHIVE RESOURCE: ${error.message}`);
+             }
              setIsResourceModalOpen(false);
           }}
           activeWingId={activeWing.id !== 'general' ? activeWing.id : WINGS[1].id}
@@ -506,7 +640,7 @@ function App() {
               onMarkSolved={() => handleMarkSolved(activePost.id)}
               onDeletePost={() => handleDeletePost(activePost.id)}
               onUserUpvote={handleUserUpvote}
-              onPostUpvote={handlePostUpvote}
+              onPostUpvote={activePost.isResource ? handleResourceUpvote : handlePostUpvote}
               onProfileClick={handleProfileClick}
               onCommentAdded={() => {
                 const updateFn = prev => prev.map(item => item.id === activePost.id ? { ...item, solutions: (item.solutions || 0) + 1 } : item);
@@ -557,66 +691,72 @@ function App() {
                   </div>
 
                   <div className="doubts-list">
-                    {filteredDoubts.map(doubt => {
-                      const wing = WINGS.find(w => w.id === doubt.wingId) || WINGS[0];
-                      return (
-                        <div key={doubt.id} className="doubt-card">
-                          <div className="card-header">
-                            <div className="author-info" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                              <img src={doubt.author?.includes('Anonymous') ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : (currentUser && doubt.creatorAlias && doubt.creatorAlias === currentUser.alias) ? currentUser.avatar : (doubt.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default')} className="author-avatar" alt="author" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
-                              <div>
-                                <div 
-                                  className="author-name" 
-                                  style={{cursor: doubt.author.includes('Anonymous') ? 'default' : 'pointer'}}
-                                  onClick={(e) => { e.stopPropagation(); handleProfileClick(doubt.author); }}
-                                >
-                                  {doubt.author}
+                    {isLoading ? (
+                      [1, 2, 3].map(i => <DoubtSkeleton key={i} />)
+                    ) : (
+                      <>
+                        {filteredDoubts.map(doubt => {
+                          const wing = WINGS.find(w => w.id === doubt.wingId) || WINGS[0];
+                          return (
+                            <div key={doubt.id} className="doubt-card">
+                              <div className="card-header">
+                                <div className="author-info" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                  <img src={doubt.author?.includes('Anonymous') ? 'https://api.dicebear.com/7.x/bottts/svg?seed=GhostNinja' : (currentUser && doubt.creatorAlias && doubt.creatorAlias === currentUser.alias) ? currentUser.avatar : (doubt.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=default')} className="author-avatar" alt="author" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                                  <div>
+                                    <div 
+                                      className="author-name" 
+                                      style={{cursor: doubt.author.includes('Anonymous') ? 'default' : 'pointer'}}
+                                      onClick={(e) => { e.stopPropagation(); handleProfileClick(doubt.author); }}
+                                    >
+                                      {doubt.author}
+                                    </div>
+                                    <div className="post-time">{doubt.time} • {wing.name}</div>
+                                  </div>
                                 </div>
-                                <div className="post-time">{doubt.time} • {wing.name}</div>
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                              {doubt.is_solved && (
-                                <div style={{ 
-                                  padding: '4px 8px', borderRadius: '4px', backgroundColor: 'rgba(16, 185, 129, 0.1)', 
-                                  color: '#10B981', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' 
-                                }}>
-                                  Solved
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                  {doubt.is_solved && (
+                                    <div style={{ 
+                                      padding: '4px 8px', borderRadius: '4px', backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+                                      color: '#10B981', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' 
+                                    }}>
+                                      Solved
+                                    </div>
+                                  )}
+                                  <div className="wing-badge" style={{ '--wing-color': wing.color, color: wing.color }}>
+                                    {wing.id}
+                                  </div>
                                 </div>
-                              )}
-                              <div className="wing-badge" style={{ '--wing-color': wing.color, color: wing.color }}>
-                                {wing.id}
+                              </div>
+                              <h3 className="card-title">{doubt.title}</h3>
+                              <p className="card-snippet">{doubt.snippet}</p>
+                              <div className="card-footer">
+                                <div className="metrics">
+                                  <div className="metric-item" style={{ color: 'white' }}>
+                                    <MessageCircle size={16} color="white" />
+                                    <span>{doubt.solutions} Solutions</span>
+                                  </div>
+                                  <button 
+                                    className="action-btn" 
+                                    onClick={(e) => { e.stopPropagation(); (doubt.isResource ? handleResourceUpvote : handlePostUpvote)(doubt.id); }}
+                                    style={{ color: doubt.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white' }}
+                                  >
+                                    <ChevronUp size={16} color={doubt.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white'} />
+                                    <span style={{ color: doubt.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white' }}>{doubt.upvotes || 0}</span>
+                                  </button>
+                                </div>
+                                <button className="view-thread" onClick={() => setActivePost(doubt)}>
+                                  VIEW THREAD <ArrowRight size={16} />
+                                </button>
                               </div>
                             </div>
+                          );
+                        })}
+                        {filteredDoubts.length === 0 && (
+                          <div style={{ textAlign: 'center', margin: '40px 0', color: 'var(--text-secondary)' }}>
+                            No doubts found. Be the first to ask!
                           </div>
-                          <h3 className="card-title">{doubt.title}</h3>
-                          <p className="card-snippet">{doubt.snippet}</p>
-                          <div className="card-footer">
-                            <div className="metrics">
-                              <div className="metric-item" style={{ color: 'white' }}>
-                                <MessageCircle size={16} color="white" />
-                                <span>{doubt.solutions} Solutions</span>
-                              </div>
-                              <button 
-                                className="action-btn" 
-                                onClick={(e) => { e.stopPropagation(); handlePostUpvote(doubt.id); }}
-                                style={{ color: doubt.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white' }}
-                              >
-                                <ChevronUp size={16} color={doubt.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white'} />
-                                <span style={{ color: doubt.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white' }}>{doubt.upvotes || 0}</span>
-                              </button>
-                            </div>
-                            <button className="view-thread" onClick={() => setActivePost(doubt)}>
-                              VIEW THREAD <ArrowRight size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {filteredDoubts.length === 0 && (
-                      <div style={{ textAlign: 'center', margin: '40px 0', color: 'var(--text-secondary)' }}>
-                        No doubts found. Be the first to ask!
-                      </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </>
@@ -630,60 +770,74 @@ function App() {
                       <Plus size={16} /> Add Resource
                     </button>
                   </div>
-                  {resources.filter(r => activeWing.id === 'general' || r.wingId === activeWing.id).map(r => {
-                     const wing = WINGS.find(w => w.id === r.wingId) || WINGS[0];
-                     return (
-                      <div key={r.id} className="doubt-card">
-                         <div className="card-header">
-                           <div className="author-info">
-                             <div>
-                               <div className="author-name">{r.author}</div>
-                               <div className="post-time">{r.time} • <span style={{color: wing.color}}>{wing.name}</span></div>
+                  {isLoading ? (
+                    [1, 2, 3].map(i => <DoubtSkeleton key={i} />)
+                  ) : (
+                    <>
+                      {resources.filter(r => activeWing.id === 'general' || r.wingId === activeWing.id).map(r => {
+                        const wing = WINGS.find(w => w.id === r.wingId) || WINGS[0];
+                        return (
+                          <div key={r.id} className="doubt-card">
+                             <div className="card-header">
+                               <div className="author-info">
+                                 <div>
+                                   <div className="author-name">{r.author}</div>
+                                   <div className="post-time">{r.time} • <span style={{color: wing.color}}>{wing.name}</span></div>
+                                 </div>
+                               </div>
+                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                 <div className="wing-badge" style={{ '--wing-color': wing.color, color: wing.color }}>
+                                   {r.type.toUpperCase()}
+                                 </div>
+                               </div>
                              </div>
-                           </div>
-                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                             <div className="wing-badge" style={{ '--wing-color': wing.color, color: wing.color }}>
-                               {r.type.toUpperCase()}
+                             <h3 className="card-title">{r.title}</h3>
+                             {r.type === 'link' && <a href={r.content} target="_blank" rel="noreferrer" style={{color: '#3b82f6', textDecoration: 'underline', display: 'block', marginBottom: '20px', wordBreak: 'break-all'}}>{r.content}</a>}
+                             {r.type === 'text' && <p className="card-snippet">{r.content}</p>}
+                             {r.type === 'image' && (
+                                r.content ? <img src={r.content} alt="Resource" style={{maxWidth: '100%', borderRadius: '8px', marginBottom: '16px'}} /> : <p className="card-snippet">Image Not Available</p>
+                             )}
+                             <div className="card-footer" style={{ marginTop: '16px' }}>
+                               <div className="metrics">
+                                 <div className="metric-item" style={{ color: 'white' }}>
+                                   <MessageCircle size={16} color="white" />
+                                   <span>{r.solutions || 0} Comments</span>
+                                 </div>
+                                 <button 
+                                    className="action-btn" 
+                                    onClick={(e) => { e.stopPropagation(); handleResourceUpvote(r.id); }}
+                                    style={{ color: r.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white', display: 'flex', gap: '4px', alignItems: 'center', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                                  >
+                                    <ChevronUp size={16} color={r.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white'} />
+                                    <span style={{ color: r.upvotedBy?.includes(currentUser?.alias) ? '#10B981' : 'white' }}>{r.upvotes || 0}</span>
+                                  </button>
+                               </div>
+                               <button className="view-thread" onClick={() => setActivePost({
+                                 id: r.id,
+                                 wingId: r.wingId,
+                                 title: r.title,
+                                 text_content: r.type === 'text' ? r.content : (r.type === 'link' ? `Resource Link: ${r.content}` : 'Image attached.'),
+                                 image_url: r.type === 'image' ? r.content : null,
+                                 author: r.author,
+                                 creatorAlias: r.author,
+                                 time: r.time,
+                                 solutions: r.solutions || 0,
+                                 upvotes: r.upvotes || 0,
+                                 upvotedBy: r.upvotedBy || [],
+                                 isResource: true
+                               })}>
+                                 DISCUSS <ArrowRight size={16} />
+                               </button>
                              </div>
-                           </div>
-                         </div>
-                         <h3 className="card-title">{r.title}</h3>
-                         {r.type === 'link' && <a href={r.content} target="_blank" rel="noreferrer" style={{color: '#3b82f6', textDecoration: 'underline', display: 'block', marginBottom: '20px', wordBreak: 'break-all'}}>{r.content}</a>}
-                         {r.type === 'text' && <p className="card-snippet">{r.content}</p>}
-                         {r.type === 'image' && (
-                            r.content ? <img src={r.content} alt="Resource" style={{maxWidth: '100%', borderRadius: '8px', marginBottom: '16px'}} /> : <p className="card-snippet">Image Not Available</p>
-                         )}
-                         <div className="card-footer" style={{ marginTop: '16px' }}>
-                           <div className="metrics">
-                             <div className="metric-item" style={{ color: 'white' }}>
-                               <MessageCircle size={16} color="white" />
-                               <span>{r.solutions || 0} Comments</span>
-                             </div>
-                           </div>
-                           <button className="view-thread" onClick={() => setActivePost({
-                             id: r.id,
-                             wingId: r.wingId,
-                             title: r.title,
-                             text_content: r.type === 'text' ? r.content : (r.type === 'link' ? `Resource Link: ${r.content}` : 'Image attached.'),
-                             image_url: r.type === 'image' ? r.content : null,
-                             author: r.author,
-                             creatorAlias: r.author,
-                             time: r.time,
-                             solutions: r.solutions || 0,
-                             upvotes: r.upvotes || 0,
-                             upvotedBy: r.upvotedBy || [],
-                             isResource: true
-                           })}>
-                             DISCUSS <ArrowRight size={16} />
-                           </button>
-                         </div>
-                      </div>
-                     );
-                  })}
-                  {resources.filter(r => activeWing.id === 'general' || r.wingId === activeWing.id).length === 0 && (
-                    <div style={{ textAlign: 'center', margin: '40px 0', color: 'var(--text-secondary)' }}>
-                      No study materials found for this wing. Share something useful!
-                    </div>
+                          </div>
+                         );
+                      })}
+                      {resources.filter(r => activeWing.id === 'general' || r.wingId === activeWing.id).length === 0 && (
+                        <div style={{ textAlign: 'center', margin: '40px 0', color: 'var(--text-secondary)' }}>
+                          No study materials found for this wing. Share something useful!
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -708,36 +862,51 @@ function App() {
                       </button>
                     )}
                   </div>
-                  <div className="leaderboard-list">
-                     {sortedContributors.map((user, index) => (
-                        <div 
-                          key={user.id} 
-                          id={`rank-${user.name}`}
-                          style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', 
-                            backgroundColor: (currentUser && user.name === currentUser.alias) ? 'rgba(var(--active-color-rgb, 168, 85, 247), 0.15)' : 'rgba(255,255,255,0.05)', 
-                            borderRadius: '12px', marginBottom: '12px',
-                            border: (currentUser && user.name === currentUser.alias) ? '1px solid var(--active-color)' : '1px solid transparent',
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                         <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
-                           <div style={{color: 'var(--text-secondary)', fontSize: '18px', fontWeight: 'bold', width: '24px'}}>#{index + 1}</div>
-                           <img src={(currentUser && user.name === currentUser.alias) ? currentUser.avatar : user.avatar} style={{width: '40px', height: '40px', borderRadius: '50%'}} alt={user.name} />
-                           <div>
-                              <div 
-                                style={{color: 'white', fontWeight: 600, cursor: 'pointer'}}
-                                onClick={() => handleProfileClick(user.name)}
-                              >
-                                {user.name}
-                              </div>
-                              <div style={{color: 'var(--text-secondary)', fontSize: '12px'}}>{user.solved} Doubts Solved</div>
+                  
+                  {isLoading ? (
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                      <LeaderboardSkeleton />
+                      <LeaderboardSkeleton />
+                      <LeaderboardSkeleton />
+                      <p style={{ marginTop: '16px', fontSize: '12px' }}>Establishing neural link...</p>
+                    </div>
+                  ) : (
+                    <div className="leaderboard-list">
+                       {sortedContributors.map((user, index) => (
+                          <div 
+                            key={user.id} 
+                            id={`rank-${user.name}`}
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', 
+                              backgroundColor: (currentUser && user.name === currentUser.alias) ? 'rgba(var(--active-color-rgb, 168, 85, 247), 0.15)' : 'rgba(255,255,255,0.05)', 
+                              borderRadius: '12px', marginBottom: '12px',
+                              border: (currentUser && user.name === currentUser.alias) ? '1px solid var(--active-color)' : '1px solid transparent',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                           <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+                             <div style={{color: 'var(--text-secondary)', fontSize: '18px', fontWeight: 'bold', width: '24px'}}>#{index + 1}</div>
+                             <img src={(currentUser && user.name === currentUser.alias) ? currentUser.avatar : user.avatar} style={{width: '40px', height: '40px', borderRadius: '50%'}} alt={user.name} />
+                             <div>
+                                <div 
+                                  style={{color: 'white', fontWeight: 600, cursor: 'pointer'}}
+                                  onClick={() => handleProfileClick(user.name)}
+                                >
+                                  {user.name}
+                                </div>
+                                <div style={{color: 'var(--text-secondary)', fontSize: '12px'}}>{user.solved} Doubts Solved</div>
+                             </div>
                            </div>
+                           <div style={{color: '#10B981', fontWeight: 'bold'}}>{user.displayXp} XP</div>
                          </div>
-                         <div style={{color: '#10B981', fontWeight: 'bold'}}>{user.displayXp} XP</div>
-                       </div>
-                    ))}
-                  </div>
+                      ))}
+                      {sortedContributors.length === 0 && (
+                        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>
+                          No contributors found in this sector.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -752,24 +921,32 @@ function App() {
                   Top Contributors
                 </div>
                 <div className="user-list">
-                  {sortedContributors.slice(0, 5).map(user => (
-                    <div key={user.id} className="user-list-item">
-                      <div className="user-listing-info">
-                        <img src={(currentUser && user.name === currentUser.alias) ? currentUser.avatar : user.avatar} className="avatar" alt={user.name} />
-                        <div>
-                          <div 
-                             className="profile-name" 
-                             onClick={() => handleProfileClick(user.name)} 
-                             style={{cursor: 'pointer'}}
-                          >
-                             {user.name}
-                          </div>
-                          <div className="profile-rank">{user.solved} Doubts Solved</div>
-                        </div>
-                      </div>
-                      <div className="xp-badge">{user.displayXp} XP</div>
+                  {isLoading ? (
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '12px', padding: '10px 0' }}>
+                      <SidebarSkeleton />
+                      <SidebarSkeleton />
+                      <SidebarSkeleton />
                     </div>
-                  ))}
+                  ) : (
+                    sortedContributors.slice(0, 5).map(user => (
+                      <div key={user.id} className="user-list-item">
+                        <div className="user-listing-info">
+                          <img src={(currentUser && user.name === currentUser.alias) ? currentUser.avatar : user.avatar} className="avatar" alt={user.name} />
+                          <div>
+                            <div 
+                               className="profile-name" 
+                               onClick={() => handleProfileClick(user.name)} 
+                               style={{cursor: 'pointer'}}
+                            >
+                               {user.name}
+                            </div>
+                            <div className="profile-rank">{user.solved} Doubts Solved</div>
+                          </div>
+                        </div>
+                        <div className="xp-badge">{user.displayXp} XP</div>
+                      </div>
+                    ))
+                  )}
                 </div>
                 <button style={{ 
                   width: '100%', padding: '12px', marginTop: '16px', 
